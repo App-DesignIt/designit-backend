@@ -6,6 +6,7 @@ import edu.cmu.designit.server.exceptions.AppException;
 import edu.cmu.designit.server.exceptions.AppInternalServerException;
 import edu.cmu.designit.server.models.User;
 import edu.cmu.designit.server.utils.MongoPool;
+import edu.cmu.designit.server.utils.PasswordUtils;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
@@ -31,34 +32,35 @@ public class UserManager extends Manager {
 
 
     public void createUser(User user) throws AppException {
-
-        try{
+        try {
             JSONObject json = new JSONObject(user);
 
             Document newDoc = new Document()
-                    .append("username", user.getUsername())
+                    .append("userId", user.getUserId())
+                    .append("fullName", user.getFullName())
+                    .append("email", user.getEmail())
+                    .append("roleId", user.getRoleId())
                     .append("password", user.getPassword())
-                    .append("email",user.getEmail());
-            if (newDoc != null)
+                    .append("salt", user.getSalt());
+            if (newDoc != null) {
                 userCollection.insertOne(newDoc);
-            else
+            }
+            else {
                 throw new AppInternalServerException(0, "Failed to create new user");
-
-        }catch(Exception e){
+            }
+        } catch (Exception e) {
             throw handleException("Create User", e);
         }
-
     }
 
     public void updateUser( User user) throws AppException {
         try {
-
-
-            Bson filter = new Document("_id", new ObjectId(user.getId()));
+            Bson filter = new Document("userId", user.getUserId());
             Bson newValue = new Document()
-                    .append("username", user.getUsername())
-                    .append("password", user.getPassword())
-                    .append("email",user.getEmail());
+                    .append("userId", user.getUserId())
+                    .append("fullName", user.getFullName())
+                    .append("email", user.getEmail())
+                    .append("roleId", user.getRoleId());
             Bson updateOperationDocument = new Document("$set", newValue);
 
             if (newValue != null)
@@ -71,9 +73,10 @@ public class UserManager extends Manager {
         }
     }
 
+
     public void deleteUser(String userId) throws AppException {
         try {
-            Bson filter = new Document("_id", new ObjectId(userId));
+            Bson filter = new Document("userId", userId);
             userCollection.deleteOne(filter);
         }catch (Exception e){
             throw handleException("Delete User", e);
@@ -87,10 +90,11 @@ public class UserManager extends Manager {
             for(Document userDoc: userDocs) {
                 User user = new User(
                         userDoc.getObjectId("_id").toString(),
-                        userDoc.getString("username"),
-                        userDoc.getString("password"),
-                        userDoc.getString("email")
-                        );
+                        userDoc.getString("userId"),
+                        userDoc.getString("fullName"),
+                        userDoc.getString("email"),
+                        userDoc.getString("roleId")
+                );
                 userList.add(user);
             }
             return new ArrayList<>(userList);
@@ -104,17 +108,42 @@ public class UserManager extends Manager {
             ArrayList<User> userList = new ArrayList<>();
             FindIterable<Document> userDocs = userCollection.find();
             for(Document userDoc: userDocs) {
-                if(userDoc.getObjectId("_id").toString().equals(id)) {
+                if(userDoc.getString("userId").equals(id)) {
                     User user = new User(
                             userDoc.getObjectId("_id").toString(),
-                            userDoc.getString("username"),
-                            userDoc.getString("password"),
-                            userDoc.getString("email")
+                            userDoc.getString("userId"),
+                            userDoc.getString("fullName"),
+                            userDoc.getString("email"),
+                            userDoc.getString("roleId")
                     );
                     userList.add(user);
                 }
             }
             return new ArrayList<>(userList);
+        } catch(Exception e){
+            throw handleException("Get User List", e);
+        }
+    }
+
+    public boolean checkAuthentication(String id, String password) throws AppException {
+        try{
+            ArrayList<User> userList = new ArrayList<>();
+            FindIterable<Document> userDocs = userCollection.find();
+            for(Document userDoc: userDocs) {
+                if(userDoc.getString("userId").equals(id)) {
+                    User user = new User(
+                            userDoc.getObjectId("_id").toString(),
+                            userDoc.getString("userId"),
+                            userDoc.getString("fullName"),
+                            userDoc.getString("email"),
+                            userDoc.getString("roleId")
+                    );
+                    user.setPassword(userDoc.getString("password"));
+                    user.setSalt(userDoc.getString("salt"));
+                    userList.add(user);
+                }
+            }
+            return PasswordUtils.verifyUserPassword(password, userList.get(0).getPassword(), userList.get(0).getSalt());
         } catch(Exception e){
             throw handleException("Get User List", e);
         }

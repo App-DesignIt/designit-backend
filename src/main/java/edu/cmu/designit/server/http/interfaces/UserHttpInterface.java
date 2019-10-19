@@ -35,33 +35,41 @@ public class UserHttpInterface extends HttpInterface{
     @Consumes({MediaType.APPLICATION_JSON})
     @Produces({MediaType.APPLICATION_JSON})
     public AppResponse postUsers(Object request){
-
         try{
             JSONObject json = null;
             json = new JSONObject(ow.writeValueAsString(request));
 
-            User newuser = new User(
+            // Generate Salt. The generated value can be stored in DB.
+            String salt = PasswordUtils.getSalt(30);
+
+            // Protect user's password. The generated value can be stored in DB.
+            String mySecurePassword = PasswordUtils.generateSecurePassword(json.getString("password"), salt);
+
+            // Print out protected password
+            System.out.println("My secure password = " + mySecurePassword);
+            System.out.println("Salt value = " + salt);
+
+            User newUser = new User(
                     null,
-                    json.getString("username"),
-                    json.getString("password"),
-                    json.getString("email")
+                    json.getString("userId"),
+                    json.getString("fullName"),
+                    json.getString("email"),
+                    json.getString("roleId"),
+                    mySecurePassword,
+                    salt
             );
-            UserManager.getInstance().createUser(newuser);
+            UserManager.getInstance().createUser(newUser);
             return new AppResponse("Insert Successful");
 
         }catch (Exception e){
             throw handleException("POST users", e);
         }
-
     }
-
-
 
     @GET
     @Produces({MediaType.APPLICATION_JSON})
     public AppResponse getUsers(@Context HttpHeaders headers){
-
-        try{
+        try {
             AppLogger.info("Got an API call");
             ArrayList<User> users = UserManager.getInstance().getUserList();
 
@@ -69,18 +77,15 @@ public class UserHttpInterface extends HttpInterface{
                 return new AppResponse(users);
             else
                 throw new HttpBadRequestException(0, "Problem with getting users");
-        }catch (Exception e){
+        } catch (Exception e){
             throw handleException("GET /users", e);
         }
-
-
     }
 
     @GET
     @Path("/{userId}")
     @Produces({MediaType.APPLICATION_JSON})
     public AppResponse getSingleUser(@Context HttpHeaders headers, @PathParam("userId") String userId){
-
         try{
             AppLogger.info("Got an API call");
             ArrayList<User> users = UserManager.getInstance().getUserById(userId);
@@ -92,8 +97,6 @@ public class UserHttpInterface extends HttpInterface{
         }catch (Exception e){
             throw handleException("GET /users/{userId}", e);
         }
-
-
     }
 
 
@@ -108,10 +111,11 @@ public class UserHttpInterface extends HttpInterface{
         try{
             json = new JSONObject(ow.writeValueAsString(request));
             User user = new User(
+                    null,
                     userId,
-                    json.getString("username"),
-                    json.getString("password"),
-                    json.getString("email")
+                    json.getString("fullName"),
+                    json.getString("email"),
+                    json.getString("roleId")
             );
 
             UserManager.getInstance().updateUser(user);
@@ -133,12 +137,27 @@ public class UserHttpInterface extends HttpInterface{
     public AppResponse deleteUsers(@PathParam("userId") String userId){
 
         try{
-            UserManager.getInstance().deleteUser( userId);
+            UserManager.getInstance().deleteUser(userId);
             return new AppResponse("Delete Successful");
         }catch (Exception e){
             throw handleException("DELETE users/{userId}", e);
         }
+    }
 
+    @GET
+    @Path("/check")
+    @Produces({MediaType.APPLICATION_JSON})
+    public AppResponse checkAuthentication(@QueryParam("userId") String userId,
+                                           @QueryParam("password") String password){
+        try {
+            boolean result = UserManager.getInstance().checkAuthentication(userId, password);
+            if(result)
+                return new AppResponse("Success");
+            else
+                return new AppResponse("Failed");
+        } catch (Exception e){
+            throw handleException("GET /users", e);
+        }
     }
 
 
