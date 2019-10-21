@@ -99,15 +99,12 @@ public class UserHttpInterface extends HttpInterface{
         }
     }
 
-
     @PATCH
     @Path("/{userId}")
     @Consumes({ MediaType.APPLICATION_JSON})
     @Produces({ MediaType.APPLICATION_JSON})
     public AppResponse patchUsers(Object request, @PathParam("userId") String userId){
-
         JSONObject json = null;
-
         try{
             json = new JSONObject(ow.writeValueAsString(request));
             User user = new User(
@@ -127,15 +124,11 @@ public class UserHttpInterface extends HttpInterface{
         return new AppResponse("Update Successful");
     }
 
-
-
-
     @DELETE
     @Path("/{userId}")
     @Consumes({ MediaType.APPLICATION_JSON })
     @Produces({ MediaType.APPLICATION_JSON })
     public AppResponse deleteUsers(@PathParam("userId") String userId){
-
         try{
             UserManager.getInstance().deleteUser(userId);
             return new AppResponse("Delete Successful");
