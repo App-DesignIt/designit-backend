@@ -145,12 +145,15 @@ public class UserHttpInterface extends HttpInterface{
     }
 
     @GET
-    @Path("/check")
+    @Path("/login")
+    @Consumes({ MediaType.APPLICATION_JSON })
     @Produces({MediaType.APPLICATION_JSON})
-    public AppResponse checkAuthentication(@QueryParam("userId") String userId,
-                                           @QueryParam("password") String password){
+    public AppResponse checkAuthentication(Object request){
+        JSONObject json = null;
         try {
-            boolean result = UserManager.getInstance().checkAuthentication(userId, password);
+            json = new JSONObject(ow.writeValueAsString(request));
+            boolean result = UserManager.getInstance()
+                    .checkAuthentication(json.getString("userId"), json.getString("password"));
             if(result)
                 return new AppResponse("Success");
             else
@@ -159,6 +162,4 @@ public class UserHttpInterface extends HttpInterface{
             throw handleException("GET /users", e);
         }
     }
-
-
 }

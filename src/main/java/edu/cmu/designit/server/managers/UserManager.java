@@ -148,6 +148,4 @@ public class UserManager extends Manager {
             throw handleException("Get User List", e);
         }
     }
-
-
 }
