@@ -129,7 +129,7 @@ public class UserHttpInterface extends HttpInterface{
     @Consumes({ MediaType.APPLICATION_JSON })
     @Produces({ MediaType.APPLICATION_JSON })
     public AppResponse deleteUsers(@PathParam("userId") String userId){
-        try{
+        try {
             UserManager.getInstance().deleteUser(userId);
             return new AppResponse("Delete Successful");
         }catch (Exception e){
