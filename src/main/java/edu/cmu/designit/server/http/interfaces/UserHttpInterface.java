@@ -132,7 +132,7 @@ public class UserHttpInterface extends HttpInterface{
         try {
             UserManager.getInstance().deleteUser(userId);
             return new AppResponse("Delete Successful");
-        }catch (Exception e){
+        } catch (Exception e){
             throw handleException("DELETE users/{userId}", e);
         }
     }
