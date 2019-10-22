@@ -143,10 +143,17 @@ public class UserHttpInterface extends HttpInterface{
     @Produces({MediaType.APPLICATION_JSON})
     public AppResponse checkAuthentication(Object request){
         JSONObject json = null;
+        UserManager userManager = UserManager.getInstance();
         try {
             json = new JSONObject(ow.writeValueAsString(request));
-            boolean result = UserManager.getInstance()
-                    .checkAuthentication(json.getString("userId"), json.getString("password"));
+            String userId = json.getString("userId");
+            //If there 0 or more than 1 users in the db, return failed
+            ArrayList<User> userArrayList = userManager.getUserById(userId);
+            if(userArrayList.size() != 1) {
+                return new AppResponse("Failed");
+            }
+            boolean result = userManager
+                    .checkAuthentication(userId, json.getString("password"));
             if(result)
                 return new AppResponse("Success");
             else

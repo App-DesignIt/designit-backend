@@ -7,11 +7,8 @@ import edu.cmu.designit.server.http.exceptions.HttpBadRequestException;
 import edu.cmu.designit.server.http.responses.AppResponse;
 import edu.cmu.designit.server.http.utils.PATCH;
 import edu.cmu.designit.server.managers.TagManager;
-import edu.cmu.designit.server.managers.UserManager;
 import edu.cmu.designit.server.models.Tag;
-import edu.cmu.designit.server.models.User;
 import edu.cmu.designit.server.utils.AppLogger;
-import edu.cmu.designit.server.utils.PasswordUtils;
 import org.bson.Document;
 import org.json.JSONObject;
 

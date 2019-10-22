@@ -9,7 +9,6 @@ import edu.cmu.designit.server.utils.MongoPool;
 import edu.cmu.designit.server.utils.PasswordUtils;
 import org.bson.Document;
 import org.bson.conversions.Bson;
-import org.bson.types.ObjectId;
 import org.json.JSONObject;
 
 import java.lang.String;
@@ -53,7 +52,7 @@ public class UserManager extends Manager {
         }
     }
 
-    public void updateUser( User user) throws AppException {
+    public void updateUser(User user) throws AppException {
         try {
             Bson filter = new Document("userId", user.getUserId());
             Bson newValue = new Document()
