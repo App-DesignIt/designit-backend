@@ -1,1 +1,2 @@
 rootProject.name = 'app-api'
+enableFeaturePreview('IMPROVED_POM_SUPPORT')
