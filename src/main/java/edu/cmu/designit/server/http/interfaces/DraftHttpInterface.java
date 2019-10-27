@@ -7,6 +7,7 @@ import com.mongodb.client.MongoCollection;
 import edu.cmu.designit.server.http.exceptions.HttpBadRequestException;
 import edu.cmu.designit.server.http.responses.AppResponse;
 import edu.cmu.designit.server.http.utils.PATCH;
+import edu.cmu.designit.server.managers.DraftImageManager;
 import edu.cmu.designit.server.managers.DraftManager;
 import edu.cmu.designit.server.models.Draft;
 import edu.cmu.designit.server.utils.AppLogger;
@@ -17,7 +18,9 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
+import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Date;
 
 @Path("/drafts")
 
@@ -36,12 +39,12 @@ public class DraftHttpInterface extends HttpInterface{
   public AppResponse postDrafts(Object request){
 
     try{
-      JSONObject json = null;
-      json = new JSONObject(ow.writeValueAsString(request));
+      JSONObject json = new JSONObject(ow.writeValueAsString(request));
 
       Draft newDraft = new Draft(
               json.getString("title"),
-              json.getString("description")
+              json.getString("description"),
+              json.getString("imageUrl")
       );
       DraftManager.getInstance().createDraft(newDraft);
       return new AppResponse("Insert Successful");
@@ -49,38 +52,49 @@ public class DraftHttpInterface extends HttpInterface{
     }catch (Exception e){
       throw handleException("POST drafts", e);
     }
-
   }
 
-
+  //Sorting: http://localhost:8080/api/drafts?sortby=title&sortdirection=asc
+  //Pagination: http://localhost:8080/api/drafts?offset=1&count=2
+  //Filter: http://localhost:8080/api/drafts?filter=
   @GET
   @Produces({MediaType.APPLICATION_JSON})
-  public AppResponse getDrafts(@Context HttpHeaders headers){
+  public AppResponse getDrafts(@Context HttpHeaders headers, @QueryParam("sortby") String sortby,
+                               @QueryParam("sortdirection") String sortdirection,
+                               @QueryParam("offset") Integer offset,
+                               @QueryParam("count") Integer count,
+                               @QueryParam("filter") String filter){
 
     try{
-      AppLogger.info("Got an API call");
-      ArrayList<Draft> drafts = DraftManager.getInstance().getDraftList();
+      ArrayList<Draft> drafts = null;
+      if(sortby != null) {
+        if(sortdirection == null)  {
+          drafts = DraftManager.getInstance().getDraftListSorted(sortby, "desc");
+        } else {
+          drafts = DraftManager.getInstance().getDraftListSorted(sortby, "asc");
+        }
+      } else if (offset != null && count != null ) {
+        drafts = DraftManager.getInstance().getDraftListPaginated(offset, count);
+      } else if (filter != null) {
+        drafts = DraftManager.getInstance().getDraftListFiltered(filter);
+      } else{
+        drafts = DraftManager.getInstance().getDraftList();
+      }
 
-      if(drafts != null)
-        return new AppResponse(drafts);
-      else
-        throw new HttpBadRequestException(0, "Problem with getting users");
-    }catch (Exception e){
+      return new AppResponse(drafts);
+    } catch (Exception e){
       throw handleException("GET /drafts", e);
     }
-
   }
 
   @GET
   @Path("/{draftId}")
   @Produces({MediaType.APPLICATION_JSON})
-  public AppResponse getSingleUser(@Context HttpHeaders headers, @PathParam("draftId") String draftId){
+  public AppResponse getSingleDraft(@Context HttpHeaders headers, @PathParam("draftId") String draftId){
 
     try{
       AppLogger.info("Got an API call");
       ArrayList<Draft> drafts = DraftManager.getInstance().getDraftById(draftId);
-
-
       if(drafts != null)
         return new AppResponse(drafts);
       else
@@ -88,8 +102,6 @@ public class DraftHttpInterface extends HttpInterface{
     }catch (Exception e){
       throw handleException("GET /drafts/{draftId}", e);
     }
-
-
   }
 
 
@@ -97,16 +109,19 @@ public class DraftHttpInterface extends HttpInterface{
   @Path("/{draftId}")
   @Consumes({ MediaType.APPLICATION_JSON})
   @Produces({ MediaType.APPLICATION_JSON})
-  public AppResponse patchUsers(Object request, @PathParam("draftId") String draftId){
-
-    JSONObject json = null;
-
+  public AppResponse patchDrafts(Object request, @PathParam("draftId") String draftId){
     try{
-      json = new JSONObject(ow.writeValueAsString(request));
+      JSONObject json = new JSONObject(ow.writeValueAsString(request));
       Draft draft = new Draft(
               draftId,
               json.getString("title"),
-              json.getString("description")
+              json.getString("description"),
+              json.getString("imageUrl"),
+              json.getInt("likedCount"),
+              json.getInt("viewNumber"),
+              json.getDouble("userScore"),
+              new Date(json.getLong("createTime")),
+              new Date(json.getLong("modifyTime"))
       );
 
       DraftManager.getInstance().updateDraft(draft);
@@ -117,8 +132,6 @@ public class DraftHttpInterface extends HttpInterface{
 
     return new AppResponse("Update Successful");
   }
-
-
 
 
   @DELETE
