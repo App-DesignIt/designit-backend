@@ -59,6 +59,8 @@ public class LikeManager extends Manager {
                         likeDoc.getString("likerId"),
                         (Date) likeDoc.get("date")
                 );
+                String str = likeDoc.get("date").toString();
+                System.out.println(str);
                 likeList.add(like);
             }
             return new ArrayList<>(likeList);
@@ -67,47 +69,45 @@ public class LikeManager extends Manager {
         }
     }
 
-    public ArrayList<Like> getLikebyLiker(String likerId) throws AppException {
+    public ArrayList<Like> getLikebyUser(String likerId) throws AppException {
         try {
             ArrayList<Like> likeList = new ArrayList<>();
-            FindIterable<Document> likeDocs = likeCollection.find();
+            Bson filter = new Document("likerId", likerId);
+            FindIterable<Document> likeDocs = likeCollection.find(filter);
             for(Document likeDoc: likeDocs) {
-                if(likeDoc.getString("likerId").equals(likerId)) {
-                    Like like = new Like(
-                            likeDoc.getObjectId("_id").toString(),
-                            likeDoc.getString("draftId"),
-                            likeDoc.getString("ownerId"),
-                            likeDoc.getString("likerId"),
-                            (Date) likeDoc.get("date")
-                    );
-                    likeList.add(like);
-                }
+                Like like = new Like(
+                        likeDoc.getObjectId("_id").toString(),
+                        likeDoc.getString("draftId"),
+                        likeDoc.getString("ownerId"),
+                        likeDoc.getString("likerId"),
+                        (Date) likeDoc.get("date")
+                );
+                likeList.add(like);
             }
             return new ArrayList<>(likeList);
         } catch (Exception e){
-            throw handleException("Get User List", e);
+            throw handleException("Get LikeByLiker List", e);
         }
     }
 
     public ArrayList<Like> getLikebyDraft(String draftId) throws AppException {
         try {
             ArrayList<Like> likeList = new ArrayList<>();
-            FindIterable<Document> likeDocs = likeCollection.find();
+            Bson filter = new Document("draftId", draftId);
+            FindIterable<Document> likeDocs = likeCollection.find(filter);
             for(Document likeDoc: likeDocs) {
-                if(likeDoc.getString("draftId").equals(draftId)) {
-                    Like like = new Like(
-                            likeDoc.getObjectId("_id").toString(),
-                            likeDoc.getString("draftId"),
-                            likeDoc.getString("ownerId"),
-                            likeDoc.getString("likerId"),
-                            (Date) likeDoc.get("date")
-                    );
-                    likeList.add(like);
-                }
+                Like like = new Like(
+                        likeDoc.getObjectId("_id").toString(),
+                        likeDoc.getString("draftId"),
+                        likeDoc.getString("ownerId"),
+                        likeDoc.getString("likerId"),
+                        (Date) likeDoc.get("date")
+                );
+                likeList.add(like);
             }
             return new ArrayList<>(likeList);
         } catch (Exception e){
-            throw handleException("Get User List", e);
+            throw handleException("Get Like List", e);
         }
     }
 

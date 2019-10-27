@@ -7,6 +7,8 @@ import com.mongodb.client.MongoCollection;
 import edu.cmu.designit.server.http.exceptions.HttpBadRequestException;
 import edu.cmu.designit.server.http.responses.AppResponse;
 import edu.cmu.designit.server.http.utils.PATCH;
+import edu.cmu.designit.server.managers.LikeManager;
+import edu.cmu.designit.server.models.Like;
 import edu.cmu.designit.server.models.User;
 import edu.cmu.designit.server.managers.UserManager;
 import edu.cmu.designit.server.utils.*;
@@ -66,18 +68,54 @@ public class UserHttpInterface extends HttpInterface{
         }
     }
 
+//    @GET
+//    @Produces({MediaType.APPLICATION_JSON})
+//    public AppResponse getUsers(@Context HttpHeaders headers){
+//        try {
+//            AppLogger.info("Got an API call");
+//            ArrayList<User> users = UserManager.getInstance().getUserList();
+//
+//            if(users != null)
+//                return new AppResponse(users);
+//            else
+//                throw new HttpBadRequestException(0, "Problem with getting users");
+//        } catch (Exception e){
+//            throw handleException("GET /users", e);
+//        }
+//    }
+
     @GET
     @Produces({MediaType.APPLICATION_JSON})
-    public AppResponse getUsers(@Context HttpHeaders headers){
+    public AppResponse getUsers(@Context HttpHeaders headers,
+                                @QueryParam("sortBy") String sortBy,
+                                @QueryParam("direction") String direction,
+                                @QueryParam("begin") Integer begin,
+                                @QueryParam("count") Integer count,
+                                @QueryParam("pageSize") Integer pageSize,
+                                @QueryParam("page") Integer page){
         try {
             AppLogger.info("Got an API call");
-            ArrayList<User> users = UserManager.getInstance().getUserList();
+            ArrayList<User> users = null;
+            if(sortBy != null) {
+                if(direction != null) {
+                    users = UserManager.getInstance().getUserListSorted(sortBy, direction);
+                } else {
+                    users = UserManager.getInstance().getUserListSorted(sortBy, "des");
+                }
+            } else if(begin != null && count != null) {
+                users = UserManager.getInstance().getUserListPaginated(begin, count);
+            } else if(pageSize != null && page != null) {
+                int tempBegin = (page - 1) * pageSize + 1;
+                users = UserManager.getInstance().getUserListPaginated(page, pageSize);
+            } else {
+                users = UserManager.getInstance().getUserList();
+            }
 
             if(users != null)
                 return new AppResponse(users);
             else
                 throw new HttpBadRequestException(0, "Problem with getting users");
-        } catch (Exception e){
+        }catch (Exception e){
             throw handleException("GET /users", e);
         }
     }
@@ -96,6 +134,51 @@ public class UserHttpInterface extends HttpInterface{
                 throw new HttpBadRequestException(0, "Problem with getting users");
         }catch (Exception e){
             throw handleException("GET /users/{userId}", e);
+        }
+    }
+
+    @GET
+    @Path("/likes")
+    @Produces({MediaType.APPLICATION_JSON})
+    public AppResponse getLikes(@Context HttpHeaders headers){
+        try {
+            AppLogger.info("Got an API call");
+            ArrayList<Like> likes = LikeManager.getInstance().getLikeList();
+            if(likes != null)
+                return new AppResponse(likes);
+            else
+                throw new HttpBadRequestException(0, "Problem with getting likes list");
+        } catch (Exception e) {
+            throw handleException("GET /likes", e);
+        }
+    }
+
+    @GET
+    @Path("/{userId}/likes")
+    @Produces({MediaType.APPLICATION_JSON})
+    public AppResponse getLikeByLiker(@Context HttpHeaders headers, @PathParam("userId") String userId){
+        try {
+            AppLogger.info("Got an API call");
+            ArrayList<Like> likes = LikeManager.getInstance().getLikebyUser(userId);
+
+            if(likes != null)
+                return new AppResponse(likes);
+            else
+                throw new HttpBadRequestException(0, "Problem with getting like by userId");
+        } catch (Exception e) {
+            throw handleException("GET /users/{userId}/likes", e);
+        }
+    }
+
+    @DELETE
+    @Path("/{userId}/likes")
+    @Produces({ MediaType.APPLICATION_JSON })
+    public AppResponse deleteLikes(@PathParam("userId") String userId, @QueryParam("draftId") String draftId){
+        try {
+            LikeManager.getInstance().deleteLike(draftId, userId);
+            return new AppResponse("Delete Successful");
+        } catch (Exception e){
+            throw handleException("DELETE likes/", e);
         }
     }
 

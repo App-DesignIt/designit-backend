@@ -1,5 +1,6 @@
 package edu.cmu.designit.server.managers;
 
+import com.mongodb.BasicDBObject;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import edu.cmu.designit.server.exceptions.AppException;
@@ -121,6 +122,50 @@ public class UserManager extends Manager {
             return new ArrayList<>(userList);
         } catch(Exception e){
             throw handleException("Get User List", e);
+        }
+    }
+
+    public ArrayList<User> getUserListSorted(String sortBy, String direction) throws AppException {
+        try{
+            ArrayList<User> userList = new ArrayList<>();
+            BasicDBObject sortParams = new BasicDBObject();
+            //1 asending order, -1 desending order
+            int directionInt = "asc".equals(direction) ? 1 : -1;
+            sortParams.put(sortBy, directionInt);
+            FindIterable<Document> userDocs = userCollection.find().sort(sortParams);
+            for(Document userDoc: userDocs) {
+                User user = new User(
+                        userDoc.getObjectId("_id").toString(),
+                        userDoc.getString("userId"),
+                        userDoc.getString("fullName"),
+                        userDoc.getString("email"),
+                        userDoc.getString("roleId")
+                );
+                userList.add(user);
+            }
+            return new ArrayList<>(userList);
+        } catch (Exception e){
+            throw handleException("Get Sorted User List", e);
+        }
+    }
+
+    public ArrayList<User> getUserListPaginated(Integer offset, Integer count) throws AppException {
+        try {
+            ArrayList<User> userList = new ArrayList<>();
+            FindIterable<Document> userDocs = userCollection.find().skip(offset).limit(count);
+            for(Document userDoc: userDocs) {
+                User user = new User(
+                        userDoc.getObjectId("_id").toString(),
+                        userDoc.getString("userId"),
+                        userDoc.getString("fullName"),
+                        userDoc.getString("email"),
+                        userDoc.getString("roleId")
+                );
+                userList.add(user);
+            }
+            return new ArrayList<>(userList);
+        } catch (Exception e){
+            throw handleException("Get Paginated User List", e);
         }
     }
 
