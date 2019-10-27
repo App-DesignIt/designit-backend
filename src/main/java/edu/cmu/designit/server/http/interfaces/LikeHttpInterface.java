@@ -16,7 +16,6 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 
 @Path("/likes")
@@ -63,7 +62,7 @@ public class LikeHttpInterface extends HttpInterface {
                 return new AppResponse(likes);
             else
                 throw new HttpBadRequestException(0, "Problem with getting likes list");
-        } catch (Exception e){
+        } catch (Exception e) {
             throw handleException("GET /likes", e);
         }
     }
@@ -74,7 +73,7 @@ public class LikeHttpInterface extends HttpInterface {
     public AppResponse getLikeByLiker(@Context HttpHeaders headers, @PathParam("likerId") String likerId){
         try {
             AppLogger.info("Got an API call");
-            ArrayList<Like> likes = LikeManager.getInstance().getLikebyLiker(likerId);
+            ArrayList<Like> likes = LikeManager.getInstance().getLikebyUser(likerId);
 
             if(likes != null)
                 return new AppResponse(likes);
@@ -82,6 +81,23 @@ public class LikeHttpInterface extends HttpInterface {
                 throw new HttpBadRequestException(0, "Problem with getting like by likerId");
         } catch (Exception e){
             throw handleException("GET /likes/{likerId}", e);
+        }
+    }
+
+    @GET
+    @Path("/draft/{draftId}")
+    @Produces({MediaType.APPLICATION_JSON})
+    public AppResponse getLikerByDraft(@Context HttpHeaders headers, @PathParam("draftId") String draftId){
+        try {
+            AppLogger.info("Got an API call");
+            ArrayList<Like> likes = LikeManager.getInstance().getLikebyDraft(draftId);
+
+            if(likes != null)
+                return new AppResponse(likes);
+            else
+                throw new HttpBadRequestException(0, "Problem with getting like by draftId");
+        } catch (Exception e){
+            throw handleException("GET /draft/{draftId}", e);
         }
     }
 
