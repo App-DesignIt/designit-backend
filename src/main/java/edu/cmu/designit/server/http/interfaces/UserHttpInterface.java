@@ -75,7 +75,7 @@ public class UserHttpInterface extends HttpInterface{
     public AppResponse getUsers(@Context HttpHeaders headers,
                                 @QueryParam("sortBy") String sortBy,
                                 @QueryParam("direction") String direction,
-                                @QueryParam("begin") Integer begin,
+                                @QueryParam("offset") Integer offset,
                                 @QueryParam("count") Integer count,
                                 @QueryParam("pageSize") Integer pageSize,
                                 @QueryParam("page") Integer page,
@@ -89,8 +89,8 @@ public class UserHttpInterface extends HttpInterface{
                 } else {
                     users = UserManager.getInstance().getUserListSorted(sortBy, "des");
                 }
-            } else if(begin != null && count != null) {
-                users = UserManager.getInstance().getUserListPaginated(begin, count);
+            } else if(offset != null && count != null) {
+                users = UserManager.getInstance().getUserListPaginated(offset, count);
             } else if(pageSize != null && page != null) {
                 int tempBegin = (page - 1) * pageSize + 1;
                 users = UserManager.getInstance().getUserListPaginated(tempBegin, pageSize);
@@ -184,15 +184,15 @@ public class UserHttpInterface extends HttpInterface{
     }
 
     @PATCH
-    @Path("/{userId}")
+    @Path("/{id}")
     @Consumes({ MediaType.APPLICATION_JSON})
     @Produces({ MediaType.APPLICATION_JSON})
-    public AppResponse patchUsers(Object request, @PathParam("userId") String userId){
+    public AppResponse patchUsers(Object request, @PathParam("id") String id){
         JSONObject json = null;
         try{
             json = new JSONObject(ow.writeValueAsString(request));
             User user = new User(
-                    null,
+                    id,
                     json.getString("fullName"),
                     json.getString("email"),
                     json.getInt("roleId")
@@ -201,7 +201,7 @@ public class UserHttpInterface extends HttpInterface{
             UserManager.getInstance().updateUser(user);
 
         }catch (Exception e){
-            throw handleException("PATCH users/{userId}", e);
+            throw handleException("PATCH users/{id}", e);
         }
 
         return new AppResponse("Update Successful");
@@ -229,14 +229,14 @@ public class UserHttpInterface extends HttpInterface{
         UserManager userManager = UserManager.getInstance();
         try {
             json = new JSONObject(ow.writeValueAsString(request));
-            String userId = json.getString("userId");
+            String email = json.getString("email");
             //If there 0 or more than 1 users in the db, return failed
-            ArrayList<User> userArrayList = userManager.getUserById(userId);
+            ArrayList<User> userArrayList = userManager.getUserByEmail(email);
             if(userArrayList.size() != 1) {
                 return new AppResponse("Failed");
             }
             boolean result = userManager
-                    .checkAuthentication(userId, json.getString("password"));
+                    .checkAuthentication(email, json.getString("password"));
             if(result)
                 return new AppResponse("Success");
             else
