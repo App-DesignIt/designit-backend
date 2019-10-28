@@ -182,4 +182,8 @@ public class UserManager extends Manager {
         }
         return userList;
     }
+
+    public void resetUsers() {
+        userCollection.drop();
+    }
 }

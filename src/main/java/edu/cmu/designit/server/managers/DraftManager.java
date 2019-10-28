@@ -209,4 +209,8 @@ public class DraftManager extends Manager {
     return draftList;
   }
 
+  public void resetDrafts() {
+    draftCollection.drop();
+  }
+
 }

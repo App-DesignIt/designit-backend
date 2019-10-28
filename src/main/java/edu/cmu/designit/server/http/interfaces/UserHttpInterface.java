@@ -245,4 +245,16 @@ public class UserHttpInterface extends HttpInterface{
             throw handleException("GET /users", e);
         }
     }
+
+    @DELETE
+    @Path("/reset")
+    @Produces({ MediaType.APPLICATION_JSON })
+    public AppResponse resetUsers() {
+        try {
+            UserManager.getInstance().resetUsers();
+            return new AppResponse("Reset Successful");
+        } catch (Exception e) {
+            throw handleException("Reset drafts", e);
+        }
+    }
 }
