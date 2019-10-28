@@ -21,10 +21,11 @@ import java.util.ArrayList;
 public class UserManager extends Manager {
     public static UserManager _self;
     private MongoCollection<Document> userCollection;
-
+    private MongoCollection<Document> draftCollection;
 
     public UserManager() {
         this.userCollection = MongoPool.getInstance().getCollection("users");
+        this.draftCollection = MongoPool.getInstance().getCollection("drafts");
     }
 
     public static UserManager getInstance(){
@@ -95,7 +96,9 @@ public class UserManager extends Manager {
 
     public ArrayList<Draft> getDraftListByUserId(String userId) throws AppException {
         try{
-            ArrayList<Draft> draftList = new ArrayList<>();
+            Bson filter = new Document("userId", userId);
+            FindIterable<Document> draftDocs = draftCollection.find(filter);
+            ArrayList<Draft> draftList = DraftManager.getInstance().convertDocsToArrayList(draftDocs);
             return draftList;
         } catch (Exception e) {
             throw handleException("Get Draft List By User Id", e);
