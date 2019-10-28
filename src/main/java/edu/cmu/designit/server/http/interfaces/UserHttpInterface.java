@@ -7,7 +7,9 @@ import com.mongodb.client.MongoCollection;
 import edu.cmu.designit.server.http.exceptions.HttpBadRequestException;
 import edu.cmu.designit.server.http.responses.AppResponse;
 import edu.cmu.designit.server.http.utils.PATCH;
+import edu.cmu.designit.server.managers.DraftManager;
 import edu.cmu.designit.server.managers.LikeManager;
+import edu.cmu.designit.server.models.Draft;
 import edu.cmu.designit.server.models.Like;
 import edu.cmu.designit.server.models.User;
 import edu.cmu.designit.server.managers.UserManager;
@@ -155,6 +157,18 @@ public class UserHttpInterface extends HttpInterface{
                 throw new HttpBadRequestException(0, "Problem with getting likes list");
         } catch (Exception e) {
             throw handleException("GET /likes", e);
+        }
+    }
+
+    @GET
+    @Path("/{userId}/drafts")
+    @Produces({MediaType.APPLICATION_JSON})
+    public AppResponse getDraftsByUserId(@Context HttpHeaders headers, @PathParam("userId") String userId) {
+        try {
+            ArrayList<Draft> drafts = UserManager.getInstance().getDraftListByUserId(userId);
+            return new AppResponse(drafts);
+        } catch (Exception e) {
+            throw handleException("GET /users/{userId}/drafts", e);
         }
     }
 
