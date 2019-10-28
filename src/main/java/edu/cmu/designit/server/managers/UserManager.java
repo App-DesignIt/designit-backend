@@ -106,18 +106,38 @@ public class UserManager extends Manager {
     public ArrayList<User> getUserById(String id) throws AppException {
         try{
             ArrayList<User> userList = new ArrayList<>();
-            FindIterable<Document> userDocs = userCollection.find();
+            Bson filter = new Document("userId", id);
+            FindIterable<Document> userDocs = userCollection.find(filter);
             for(Document userDoc: userDocs) {
-                if(userDoc.getString("userId").equals(id)) {
-                    User user = new User(
-                            userDoc.getObjectId("_id").toString(),
-                            userDoc.getString("userId"),
-                            userDoc.getString("fullName"),
-                            userDoc.getString("email"),
-                            userDoc.getString("roleId")
-                    );
-                    userList.add(user);
-                }
+                User user = new User(
+                        userDoc.getObjectId("_id").toString(),
+                        userDoc.getString("userId"),
+                        userDoc.getString("fullName"),
+                        userDoc.getString("email"),
+                        userDoc.getString("roleId")
+                );
+                userList.add(user);
+            }
+            return new ArrayList<>(userList);
+        } catch(Exception e){
+            throw handleException("Get User List", e);
+        }
+    }
+
+    public ArrayList<User> getUserByRole(String roleId) throws AppException {
+        try{
+            ArrayList<User> userList = new ArrayList<>();
+            Bson filter = new Document("roleId", roleId);
+            FindIterable<Document> userDocs = userCollection.find(filter);
+            for(Document userDoc: userDocs) {
+                User user = new User(
+                        userDoc.getObjectId("_id").toString(),
+                        userDoc.getString("userId"),
+                        userDoc.getString("fullName"),
+                        userDoc.getString("email"),
+                        userDoc.getString("roleId")
+                );
+                userList.add(user);
             }
             return new ArrayList<>(userList);
         } catch(Exception e){
