@@ -68,21 +68,6 @@ public class UserHttpInterface extends HttpInterface{
         }
     }
 
-//    @GET
-//    @Produces({MediaType.APPLICATION_JSON})
-//    public AppResponse getUsers(@Context HttpHeaders headers){
-//        try {
-//            AppLogger.info("Got an API call");
-//            ArrayList<User> users = UserManager.getInstance().getUserList();
-//
-//            if(users != null)
-//                return new AppResponse(users);
-//            else
-//                throw new HttpBadRequestException(0, "Problem with getting users");
-//        } catch (Exception e){
-//            throw handleException("GET /users", e);
-//        }
-//    }
 
     @GET
     @Produces({MediaType.APPLICATION_JSON})
@@ -92,7 +77,8 @@ public class UserHttpInterface extends HttpInterface{
                                 @QueryParam("begin") Integer begin,
                                 @QueryParam("count") Integer count,
                                 @QueryParam("pageSize") Integer pageSize,
-                                @QueryParam("page") Integer page){
+                                @QueryParam("page") Integer page,
+                                @QueryParam("role") String role){
         try {
             AppLogger.info("Got an API call");
             ArrayList<User> users = null;
@@ -106,7 +92,9 @@ public class UserHttpInterface extends HttpInterface{
                 users = UserManager.getInstance().getUserListPaginated(begin, count);
             } else if(pageSize != null && page != null) {
                 int tempBegin = (page - 1) * pageSize + 1;
-                users = UserManager.getInstance().getUserListPaginated(page, pageSize);
+                users = UserManager.getInstance().getUserListPaginated(tempBegin, pageSize);
+            } else if(role != null) {
+                users = UserManager.getInstance().getUserByRole(role);
             } else {
                 users = UserManager.getInstance().getUserList();
             }
@@ -115,7 +103,7 @@ public class UserHttpInterface extends HttpInterface{
                 return new AppResponse(users);
             else
                 throw new HttpBadRequestException(0, "Problem with getting users");
-        }catch (Exception e){
+        } catch (Exception e) {
             throw handleException("GET /users", e);
         }
     }
@@ -134,6 +122,23 @@ public class UserHttpInterface extends HttpInterface{
                 throw new HttpBadRequestException(0, "Problem with getting users");
         }catch (Exception e){
             throw handleException("GET /users/{userId}", e);
+        }
+    }
+
+    @GET
+    @Path("/role/{roleId}")
+    @Produces({MediaType.APPLICATION_JSON})
+    public AppResponse getUserByRole(@Context HttpHeaders headers, @PathParam("roleId") String roleId){
+        try{
+            AppLogger.info("Got an API call");
+            ArrayList<User> users = UserManager.getInstance().getUserByRole(roleId);
+
+            if(users != null)
+                return new AppResponse(users);
+            else
+                throw new HttpBadRequestException(0, "Problem with getting users with roleId");
+        }catch (Exception e){
+            throw handleException("GET /role/{roleId}", e);
         }
     }
 
