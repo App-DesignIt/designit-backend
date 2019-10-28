@@ -162,7 +162,21 @@ public class DraftHttpInterface extends HttpInterface{
     }catch (Exception e){
       throw handleException("DELETE drafts/{draftId}", e);
     }
-
   }
+
+  @DELETE
+  @Path("/reset")
+  @Produces({ MediaType.APPLICATION_JSON })
+  public AppResponse resetDrafts() {
+    try {
+      DraftManager.getInstance().resetDrafts();
+      return new AppResponse("Reset Successful");
+    } catch (Exception e) {
+      throw handleException("Reset drafts", e);
+    }
+  }
+
+
+
 
 }
