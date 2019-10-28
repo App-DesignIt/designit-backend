@@ -60,7 +60,6 @@ public class LikeManager extends Manager {
                         (Date) likeDoc.get("date")
                 );
                 String str = likeDoc.get("date").toString();
-                System.out.println(str);
                 likeList.add(like);
             }
             return new ArrayList<>(likeList);
