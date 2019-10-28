@@ -105,7 +105,7 @@ public class UserManager extends Manager {
         }
     }
 
-    public ArrayList<Draft> getDraftListByUserId() throws AppException {
+    public ArrayList<Draft> getDraftListByUserId(String userId) throws AppException {
         try{
             ArrayList<Draft> draftList = new ArrayList<>();
             return draftList;
