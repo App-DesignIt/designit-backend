@@ -53,10 +53,9 @@ public class UserHttpInterface extends HttpInterface{
 
             User newUser = new User(
                     null,
-                    json.getString("userId"),
                     json.getString("fullName"),
                     json.getString("email"),
-                    json.getString("roleId"),
+                    json.getInt("roleId"),
                     mySecurePassword,
                     salt
             );
@@ -78,7 +77,7 @@ public class UserHttpInterface extends HttpInterface{
                                 @QueryParam("count") Integer count,
                                 @QueryParam("pageSize") Integer pageSize,
                                 @QueryParam("page") Integer page,
-                                @QueryParam("role") String role){
+                                @QueryParam("role") Integer role){
         try {
             AppLogger.info("Got an API call");
             ArrayList<User> users = null;
@@ -122,23 +121,6 @@ public class UserHttpInterface extends HttpInterface{
                 throw new HttpBadRequestException(0, "Problem with getting users");
         }catch (Exception e){
             throw handleException("GET /users/{userId}", e);
-        }
-    }
-
-    @GET
-    @Path("/role/{roleId}")
-    @Produces({MediaType.APPLICATION_JSON})
-    public AppResponse getUserByRole(@Context HttpHeaders headers, @PathParam("roleId") String roleId){
-        try{
-            AppLogger.info("Got an API call");
-            ArrayList<User> users = UserManager.getInstance().getUserByRole(roleId);
-
-            if(users != null)
-                return new AppResponse(users);
-            else
-                throw new HttpBadRequestException(0, "Problem with getting users with roleId");
-        }catch (Exception e){
-            throw handleException("GET /role/{roleId}", e);
         }
     }
 
@@ -197,10 +179,9 @@ public class UserHttpInterface extends HttpInterface{
             json = new JSONObject(ow.writeValueAsString(request));
             User user = new User(
                     null,
-                    userId,
                     json.getString("fullName"),
                     json.getString("email"),
-                    json.getString("roleId")
+                    json.getInt("roleId")
             );
 
             UserManager.getInstance().updateUser(user);

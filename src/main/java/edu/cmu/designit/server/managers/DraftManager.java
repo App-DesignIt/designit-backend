@@ -8,12 +8,14 @@ import com.mongodb.client.MongoCollection;
 import edu.cmu.designit.server.exceptions.AppException;
 import edu.cmu.designit.server.exceptions.AppInternalServerException;
 import edu.cmu.designit.server.models.Draft;
+import edu.cmu.designit.server.models.Like;
 import edu.cmu.designit.server.utils.MongoPool;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 public class DraftManager extends Manager {
   public static DraftManager _self;
@@ -64,6 +66,27 @@ public class DraftManager extends Manager {
               .append("userScore", draft.getUserScore())
               .append("createTime", draft.getCreateTime())
               .append("modifyTime", new Date());
+      Bson updateOperationDocument = new Document("$set", newValue);
+
+      if (newValue != null)
+        draftCollection.updateOne(filter, updateOperationDocument);
+      else
+        throw new AppInternalServerException(0, "Failed to update draft details");
+
+    } catch(Exception e) {
+      throw handleException("Update Draft", e);
+    }
+  }
+
+
+  public void updateDraftLikeCount(Like like, int value) throws AppException {
+    try {
+      String draftId = like.getDraftId();
+      Bson filter = new Document("_id", new ObjectId(draftId));
+      List<Draft> draft = getDraftById(draftId);
+      //Maybe need Null pointer handling
+      int likedCount = draft.get(0).getLikedCount();
+      Bson newValue = new Document().append("likedCount", likedCount + value);
       Bson updateOperationDocument = new Document("$set", newValue);
 
       if (newValue != null)
