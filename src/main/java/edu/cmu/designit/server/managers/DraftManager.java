@@ -1,9 +1,10 @@
 package edu.cmu.designit.server.managers;
 
 import com.mongodb.BasicDBObject;
+import com.mongodb.DB;
+import com.mongodb.DBObject;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
-import com.mongodb.client.model.Sorts;
 import edu.cmu.designit.server.exceptions.AppException;
 import edu.cmu.designit.server.exceptions.AppInternalServerException;
 import edu.cmu.designit.server.models.Draft;
@@ -11,9 +12,6 @@ import edu.cmu.designit.server.utils.MongoPool;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
-
-import java.sql.Array;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
 
@@ -89,23 +87,8 @@ public class DraftManager extends Manager {
 
   public ArrayList<Draft> getDraftList() throws AppException {
     try{
-      ArrayList<Draft> draftList = new ArrayList<>();
       FindIterable<Document> draftDocs = draftCollection.find();
-      for(Document draftDoc: draftDocs) {
-        Draft draft = new Draft(
-                draftDoc.getObjectId("_id").toString(),
-                draftDoc.getString("title"),
-                draftDoc.getString("description"),
-                draftDoc.getString("imageUrl"),
-                draftDoc.getInteger("likedCount"),
-                draftDoc.getInteger("viewNumber"),
-                draftDoc.getDouble("userScore"),
-                draftDoc.getDate("createTime"),
-                draftDoc.getDate("modifyTime")
-        );
-        draftList.add(draft);
-      }
-      return new ArrayList<>(draftList);
+      return convertDocsToArrayList(draftDocs);
     } catch(Exception e){
       throw handleException("Get Draft List", e);
     }
@@ -113,27 +96,12 @@ public class DraftManager extends Manager {
 
   public ArrayList<Draft> getDraftListSorted(String sortby, String direction) throws AppException {
     try {
-      ArrayList<Draft> draftList = new ArrayList<>();
       BasicDBObject  sortParams = new BasicDBObject();
       int directionInt = direction.equals("asc") ? 1 : -1;
       sortParams.put(sortby, directionInt);
 
       FindIterable<Document> draftDocs = draftCollection.find().sort(sortParams);
-      for(Document draftDoc: draftDocs) {
-        Draft draft = new Draft(
-                draftDoc.getObjectId("_id").toString(),
-                draftDoc.getString("title"),
-                draftDoc.getString("description"),
-                draftDoc.getString("imageUrl"),
-                draftDoc.getInteger("likedCount"),
-                draftDoc.getInteger("viewNumber"),
-                draftDoc.getDouble("userScore"),
-                draftDoc.getDate("createTime"),
-                draftDoc.getDate("modifyTime")
-        );
-        draftList.add(draft);
-      }
-      return draftList;
+      return convertDocsToArrayList(draftDocs);
     } catch (Exception e) {
       throw handleException("Get Draft List Sorted", e);
     }
@@ -141,25 +109,10 @@ public class DraftManager extends Manager {
 
   public ArrayList<Draft> getDraftListPaginated(Integer offset, Integer count) throws AppException {
     try {
-      ArrayList<Draft> draftList = new ArrayList<>();
       BasicDBObject sortParams = new BasicDBObject();
       sortParams.put("title", -1);
       FindIterable<Document> draftDocs = draftCollection.find().sort(sortParams).skip(offset).limit(count);
-      for(Document draftDoc: draftDocs) {
-        Draft draft = new Draft(
-                draftDoc.getObjectId("_id").toString(),
-                draftDoc.getString("title"),
-                draftDoc.getString("description"),
-                draftDoc.getString("imageUrl"),
-                draftDoc.getInteger("likedCount"),
-                draftDoc.getInteger("viewNumber"),
-                draftDoc.getDouble("userScore"),
-                draftDoc.getDate("createTime"),
-                draftDoc.getDate("modifyTime")
-        );
-        draftList.add(draft);
-      }
-      return draftList;
+      return convertDocsToArrayList(draftDocs);
     } catch (Exception e) {
       throw handleException("Get Draft List Paginated", e);
     }
@@ -169,10 +122,18 @@ public class DraftManager extends Manager {
     try {
       ArrayList<Draft> draftList = new ArrayList<>();
       if(filter.equals("recent")) {
-
-      }
-      if(filter.equals("featured")) {
-
+        BasicDBObject sortParams = new BasicDBObject();
+        sortParams.put("createTime", -1);
+        FindIterable<Document> draftDocs = draftCollection.find().sort(sortParams).limit(100);
+        draftList = convertDocsToArrayList(draftDocs);
+      } else if(filter.equals("featured")) {
+        BasicDBObject sortParams = new BasicDBObject();
+        sortParams.put("likedCount", -1);
+        FindIterable<Document> draftDocs = draftCollection.find().sort(sortParams).limit(100);
+        draftList = convertDocsToArrayList(draftDocs);
+      } else {
+        FindIterable<Document> draftDocs = draftCollection.find();
+        draftList = convertDocsToArrayList(draftDocs);
       }
       return draftList;
     } catch (Exception e) {
@@ -183,29 +144,42 @@ public class DraftManager extends Manager {
 
   public ArrayList<Draft> getDraftById(String id) throws AppException {
     try{
-      ArrayList<Draft> draftList = new ArrayList<>();
       FindIterable<Document> draftDocs = draftCollection.find();
-      for(Document draftDoc: draftDocs) {
-        if(draftDoc.getObjectId("_id").toString().equals(id)) {
-          Draft draft = new Draft(
-                  draftDoc.getObjectId("_id").toString(),
-                  draftDoc.getString("title"),
-                  draftDoc.getString("description"),
-                  draftDoc.getString("imageUrl"),
-                  draftDoc.getInteger("likedCount"),
-                  draftDoc.getInteger("viewNumber"),
-                  draftDoc.getDouble("userScore"),
-                  draftDoc.getDate("createTime"),
-                  draftDoc.getDate("modifyTime")
-          );
-          draftList.add(draft);
-        }
-      }
-      return new ArrayList<>(draftList);
+      return convertDocsToArrayList(draftDocs);
     } catch(Exception e){
       throw handleException("Get Draft List", e);
     }
   }
 
+  public ArrayList<Draft> searchDraftByName(String queryString) throws AppException {
+    try {
+      BasicDBObject query = new BasicDBObject();
+      query.put("title", queryString);
+      FindIterable<Document> draftDocs = draftCollection.find(query);
+      return convertDocsToArrayList(draftDocs);
+    } catch (Exception e) {
+      throw handleException("Search Draft By Name", e);
+    }
+  }
+
+
+  private ArrayList<Draft> convertDocsToArrayList(FindIterable<Document> draftDocs) {
+    ArrayList<Draft> draftList = new ArrayList<>();
+    for(Document draftDoc: draftDocs) {
+      Draft draft = new Draft(
+              draftDoc.getObjectId("_id").toString(),
+              draftDoc.getString("title"),
+              draftDoc.getString("description"),
+              draftDoc.getString("imageUrl"),
+              draftDoc.getInteger("likedCount"),
+              draftDoc.getInteger("viewNumber"),
+              draftDoc.getDouble("userScore"),
+              draftDoc.getDate("createTime"),
+              draftDoc.getDate("modifyTime")
+      );
+      draftList.add(draft);
+    }
+    return draftList;
+  }
 
 }

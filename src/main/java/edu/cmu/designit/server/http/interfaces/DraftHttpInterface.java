@@ -7,7 +7,6 @@ import com.mongodb.client.MongoCollection;
 import edu.cmu.designit.server.http.exceptions.HttpBadRequestException;
 import edu.cmu.designit.server.http.responses.AppResponse;
 import edu.cmu.designit.server.http.utils.PATCH;
-import edu.cmu.designit.server.managers.DraftImageManager;
 import edu.cmu.designit.server.managers.DraftManager;
 import edu.cmu.designit.server.models.Draft;
 import edu.cmu.designit.server.utils.AppLogger;
@@ -18,7 +17,6 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
 
@@ -84,6 +82,21 @@ public class DraftHttpInterface extends HttpInterface{
       return new AppResponse(drafts);
     } catch (Exception e){
       throw handleException("GET /drafts", e);
+    }
+  }
+
+  //Sorting: http://localhost:8080/api/drafts?sortby=title&sortdirection=asc
+  //Pagination: http://localhost:8080/api/drafts?offset=1&count=2
+  //Filter: http://localhost:8080/api/drafts?filter=
+  @GET
+  @Path("/search")
+  @Produces({MediaType.APPLICATION_JSON})
+  public AppResponse getDrafts(@Context HttpHeaders headers, @QueryParam("q") String query){
+    try{
+      ArrayList<Draft> drafts =  DraftManager.getInstance().searchDraftByName(query);
+      return new AppResponse(drafts);
+    } catch (Exception e){
+      throw handleException("GET /drafts/search", e);
     }
   }
 
