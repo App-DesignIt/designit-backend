@@ -11,6 +11,7 @@ import edu.cmu.designit.server.managers.DraftManager;
 import edu.cmu.designit.server.models.Draft;
 import edu.cmu.designit.server.utils.AppLogger;
 import org.bson.Document;
+import org.bson.types.ObjectId;
 import org.json.JSONObject;
 
 import javax.ws.rs.*;
@@ -40,10 +41,12 @@ public class DraftHttpInterface extends HttpInterface{
       JSONObject json = new JSONObject(ow.writeValueAsString(request));
 
       Draft newDraft = new Draft(
+              json.getString("userId"),
               json.getString("title"),
               json.getString("description"),
               json.getString("imageUrl")
       );
+
       DraftManager.getInstance().createDraft(newDraft);
       return new AppResponse("Insert Successful");
 
@@ -104,7 +107,6 @@ public class DraftHttpInterface extends HttpInterface{
   @Path("/{draftId}")
   @Produces({MediaType.APPLICATION_JSON})
   public AppResponse getSingleDraft(@Context HttpHeaders headers, @PathParam("draftId") String draftId){
-
     try{
       AppLogger.info("Got an API call");
       ArrayList<Draft> drafts = DraftManager.getInstance().getDraftById(draftId);
@@ -127,6 +129,7 @@ public class DraftHttpInterface extends HttpInterface{
       JSONObject json = new JSONObject(ow.writeValueAsString(request));
       Draft draft = new Draft(
               draftId,
+              json.getString("userId"),
               json.getString("title"),
               json.getString("description"),
               json.getString("imageUrl"),

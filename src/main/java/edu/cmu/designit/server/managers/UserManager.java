@@ -5,6 +5,7 @@ import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import edu.cmu.designit.server.exceptions.AppException;
 import edu.cmu.designit.server.exceptions.AppInternalServerException;
+import edu.cmu.designit.server.models.Draft;
 import edu.cmu.designit.server.models.User;
 import edu.cmu.designit.server.utils.MongoPool;
 import edu.cmu.designit.server.utils.PasswordUtils;
@@ -13,6 +14,7 @@ import org.bson.conversions.Bson;
 import org.json.JSONObject;
 
 import java.lang.String;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 public class UserManager extends Manager {
@@ -100,6 +102,15 @@ public class UserManager extends Manager {
             return new ArrayList<>(userList);
         } catch(Exception e){
             throw handleException("Get User List", e);
+        }
+    }
+
+    public ArrayList<Draft> getDraftListByUserId() throws AppException {
+        try{
+            ArrayList<Draft> draftList = new ArrayList<>();
+            return draftList;
+        } catch (Exception e) {
+            throw handleException("Get Draft List By User Id", e);
         }
     }
 

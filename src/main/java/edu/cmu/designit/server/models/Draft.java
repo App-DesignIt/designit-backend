@@ -5,6 +5,7 @@ import java.util.Date;
 
 public class Draft {
   private String id;
+  private String userId;
   private String title;
   private String description;
   private String imageUrl;
@@ -23,15 +24,17 @@ public class Draft {
   }
 
   //for creating new draft
-  public Draft(String title, String description, String imageUrl) {
+  public Draft(String userId, String title, String description, String imageUrl) {
+    this.userId = userId;
     this.title = title;
     this.description = description;
     this.imageUrl = imageUrl;
   }
 
   //for patch
-  public Draft(String id, String title, String description, String imageUrl, int likedCount, int viewNumber, double userScore, Date createTime, Date modifyTime) {
+  public Draft(String id, String userId, String title, String description, String imageUrl, int likedCount, int viewNumber, double userScore, Date createTime, Date modifyTime) {
     this.id = id;
+    this.userId = userId;
     this.title = title;
     this.description = description;
     this.imageUrl = imageUrl;
@@ -42,15 +45,16 @@ public class Draft {
     this.modifyTime = modifyTime;
   }
 
-  public Draft(String id, String title, String description, String imageUrl) {
-    this.id = id;
-    this.title = title;
-    this.description = description;
-    this.imageUrl = imageUrl;
-  }
-
   public String getId() {
     return id;
+  }
+
+  public String getUserId() {
+    return userId;
+  }
+
+  public void setUserId(String userId) {
+    this.userId = userId;
   }
 
   public void setId(String id) {
