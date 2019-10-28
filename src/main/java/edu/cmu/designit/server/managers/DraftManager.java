@@ -189,7 +189,7 @@ public class DraftManager extends Manager {
   }
 
 
-  private ArrayList<Draft> convertDocsToArrayList(FindIterable<Document> draftDocs) {
+  public ArrayList<Draft> convertDocsToArrayList(FindIterable<Document> draftDocs) {
     ArrayList<Draft> draftList = new ArrayList<>();
     for(Document draftDoc: draftDocs) {
       Draft draft = new Draft(
