@@ -115,6 +115,16 @@ public class UserManager extends Manager {
         }
     }
 
+    public ArrayList<User> getUserByEmail(String email) throws AppException {
+        try{
+            Bson filter = new Document("email", email);
+            FindIterable<Document> userDocs = userCollection.find(filter);
+            return convertDocsToArrayList(userDocs);
+        } catch(Exception e){
+            throw handleException("Get User List by email", e);
+        }
+    }
+
     public ArrayList<User> getUserByRole(int roleId) throws AppException {
         try{
             Bson filter = new Document("roleId", roleId);
@@ -147,10 +157,10 @@ public class UserManager extends Manager {
         }
     }
 
-    public boolean checkAuthentication(String id, String password) throws AppException {
+    public boolean checkAuthentication(String email, String password) throws AppException {
         try{
             ArrayList<User> userList = new ArrayList<>();
-            Bson filter = new Document("_id", new ObjectId(id));
+            Bson filter = new Document("email", email);
             FindIterable<Document> userDocs = userCollection.find(filter);
             for(Document userDoc: userDocs) {
                 User user = new User(

@@ -134,9 +134,7 @@ public class DraftManager extends Manager {
 
   public ArrayList<Draft> getDraftListPaginated(Integer offset, Integer count) throws AppException {
     try {
-      BasicDBObject sortParams = new BasicDBObject();
-      sortParams.put("title", -1);
-      FindIterable<Document> draftDocs = draftCollection.find().sort(sortParams).skip(offset).limit(count);
+      FindIterable<Document> draftDocs = draftCollection.find().skip(offset).limit(count);
       return convertDocsToArrayList(draftDocs);
     } catch (Exception e) {
       throw handleException("Get Draft List Paginated", e);
