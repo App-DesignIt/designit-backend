@@ -32,6 +32,7 @@ public class DraftManager extends Manager {
   public void createDraft(Draft draft) throws AppException {
     try{
       Document newDoc = new Document()
+              .append("userId", draft.getUserId())
               .append("title", draft.getTitle())
               .append("description", draft.getDescription())
               .append("imageUrl", draft.getImageUrl())
@@ -57,6 +58,7 @@ public class DraftManager extends Manager {
     try {
       Bson filter = new Document("_id", new ObjectId(draft.getId()));
       Bson newValue = new Document()
+              .append("userId", draft.getUserId())
               .append("title", draft.getTitle())
               .append("description", draft.getDescription())
               .append("likedCount", draft.getLikedCount())
@@ -144,7 +146,8 @@ public class DraftManager extends Manager {
 
   public ArrayList<Draft> getDraftById(String id) throws AppException {
     try{
-      FindIterable<Document> draftDocs = draftCollection.find();
+      Bson filter = new Document("_id", new ObjectId(id));
+      FindIterable<Document> draftDocs = draftCollection.find(filter);
       return convertDocsToArrayList(draftDocs);
     } catch(Exception e){
       throw handleException("Get Draft List", e);
@@ -168,6 +171,7 @@ public class DraftManager extends Manager {
     for(Document draftDoc: draftDocs) {
       Draft draft = new Draft(
               draftDoc.getObjectId("_id").toString(),
+              draftDoc.getString("userId"),
               draftDoc.getString("title"),
               draftDoc.getString("description"),
               draftDoc.getString("imageUrl"),
