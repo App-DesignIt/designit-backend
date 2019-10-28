@@ -11,6 +11,7 @@ import edu.cmu.designit.server.utils.MongoPool;
 import edu.cmu.designit.server.utils.PasswordUtils;
 import org.bson.Document;
 import org.bson.conversions.Bson;
+import org.bson.types.ObjectId;
 import org.json.JSONObject;
 
 import java.lang.String;
@@ -38,7 +39,6 @@ public class UserManager extends Manager {
             JSONObject json = new JSONObject(user);
 
             Document newDoc = new Document()
-                    .append("userId", user.getUserId())
                     .append("fullName", user.getFullName())
                     .append("email", user.getEmail())
                     .append("roleId", user.getRoleId())
@@ -57,9 +57,8 @@ public class UserManager extends Manager {
 
     public void updateUser(User user) throws AppException {
         try {
-            Bson filter = new Document("userId", user.getUserId());
+            Bson filter = new Document("_id", new ObjectId(user.getId()));
             Bson newValue = new Document()
-                    .append("userId", user.getUserId())
                     .append("fullName", user.getFullName())
                     .append("email", user.getEmail())
                     .append("roleId", user.getRoleId());
@@ -87,19 +86,8 @@ public class UserManager extends Manager {
 
     public ArrayList<User> getUserList() throws AppException {
         try{
-            ArrayList<User> userList = new ArrayList<>();
             FindIterable<Document> userDocs = userCollection.find();
-            for(Document userDoc: userDocs) {
-                User user = new User(
-                        userDoc.getObjectId("_id").toString(),
-                        userDoc.getString("userId"),
-                        userDoc.getString("fullName"),
-                        userDoc.getString("email"),
-                        userDoc.getString("roleId")
-                );
-                userList.add(user);
-            }
-            return new ArrayList<>(userList);
+            return convertDocsToArrayList(userDocs);
         } catch(Exception e){
             throw handleException("Get User List", e);
         }
@@ -116,41 +104,19 @@ public class UserManager extends Manager {
 
     public ArrayList<User> getUserById(String id) throws AppException {
         try{
-            ArrayList<User> userList = new ArrayList<>();
-            Bson filter = new Document("userId", id);
+            Bson filter = new Document("_id", new ObjectId(id));
             FindIterable<Document> userDocs = userCollection.find(filter);
-            for(Document userDoc: userDocs) {
-                User user = new User(
-                        userDoc.getObjectId("_id").toString(),
-                        userDoc.getString("userId"),
-                        userDoc.getString("fullName"),
-                        userDoc.getString("email"),
-                        userDoc.getString("roleId")
-                );
-                userList.add(user);
-            }
-            return new ArrayList<>(userList);
+            return convertDocsToArrayList(userDocs);
         } catch(Exception e){
             throw handleException("Get User List", e);
         }
     }
 
-    public ArrayList<User> getUserByRole(String roleId) throws AppException {
+    public ArrayList<User> getUserByRole(int roleId) throws AppException {
         try{
-            ArrayList<User> userList = new ArrayList<>();
             Bson filter = new Document("roleId", roleId);
             FindIterable<Document> userDocs = userCollection.find(filter);
-            for(Document userDoc: userDocs) {
-                User user = new User(
-                        userDoc.getObjectId("_id").toString(),
-                        userDoc.getString("userId"),
-                        userDoc.getString("fullName"),
-                        userDoc.getString("email"),
-                        userDoc.getString("roleId")
-                );
-                userList.add(user);
-            }
-            return new ArrayList<>(userList);
+            return convertDocsToArrayList(userDocs);
         } catch(Exception e){
             throw handleException("Get User List", e);
         }
@@ -158,23 +124,12 @@ public class UserManager extends Manager {
 
     public ArrayList<User> getUserListSorted(String sortBy, String direction) throws AppException {
         try{
-            ArrayList<User> userList = new ArrayList<>();
             BasicDBObject sortParams = new BasicDBObject();
             //1 asending order, -1 desending order
             int directionInt = "asc".equals(direction) ? 1 : -1;
             sortParams.put(sortBy, directionInt);
             FindIterable<Document> userDocs = userCollection.find().sort(sortParams);
-            for(Document userDoc: userDocs) {
-                User user = new User(
-                        userDoc.getObjectId("_id").toString(),
-                        userDoc.getString("userId"),
-                        userDoc.getString("fullName"),
-                        userDoc.getString("email"),
-                        userDoc.getString("roleId")
-                );
-                userList.add(user);
-            }
-            return new ArrayList<>(userList);
+            return convertDocsToArrayList(userDocs);
         } catch (Exception e){
             throw handleException("Get Sorted User List", e);
         }
@@ -182,19 +137,8 @@ public class UserManager extends Manager {
 
     public ArrayList<User> getUserListPaginated(Integer offset, Integer count) throws AppException {
         try {
-            ArrayList<User> userList = new ArrayList<>();
             FindIterable<Document> userDocs = userCollection.find().skip(offset).limit(count);
-            for(Document userDoc: userDocs) {
-                User user = new User(
-                        userDoc.getObjectId("_id").toString(),
-                        userDoc.getString("userId"),
-                        userDoc.getString("fullName"),
-                        userDoc.getString("email"),
-                        userDoc.getString("roleId")
-                );
-                userList.add(user);
-            }
-            return new ArrayList<>(userList);
+            return convertDocsToArrayList(userDocs);
         } catch (Exception e){
             throw handleException("Get Paginated User List", e);
         }
@@ -203,24 +147,36 @@ public class UserManager extends Manager {
     public boolean checkAuthentication(String id, String password) throws AppException {
         try{
             ArrayList<User> userList = new ArrayList<>();
-            FindIterable<Document> userDocs = userCollection.find();
+            Bson filter = new Document("_id", new ObjectId(id));
+            FindIterable<Document> userDocs = userCollection.find(filter);
             for(Document userDoc: userDocs) {
-                if(userDoc.getString("userId").equals(id)) {
-                    User user = new User(
-                            userDoc.getObjectId("_id").toString(),
-                            userDoc.getString("userId"),
-                            userDoc.getString("fullName"),
-                            userDoc.getString("email"),
-                            userDoc.getString("roleId")
-                    );
-                    user.setPassword(userDoc.getString("password"));
-                    user.setSalt(userDoc.getString("salt"));
-                    userList.add(user);
-                }
+                User user = new User(
+                        userDoc.getObjectId("_id").toString(),
+                        userDoc.getString("fullName"),
+                        userDoc.getString("email"),
+                        userDoc.getInteger("roleId")
+                );
+                user.setPassword(userDoc.getString("password"));
+                user.setSalt(userDoc.getString("salt"));
+                userList.add(user);
             }
             return PasswordUtils.verifyUserPassword(password, userList.get(0).getPassword(), userList.get(0).getSalt());
         } catch(Exception e){
             throw handleException("Get User List", e);
         }
+    }
+
+    private ArrayList<User> convertDocsToArrayList(FindIterable<Document> userDocs) {
+        ArrayList<User> userList = new ArrayList<>();
+        for(Document userDoc: userDocs) {
+            User user = new User(
+                    userDoc.getObjectId("_id").toString(),
+                    userDoc.getString("fullName"),
+                    userDoc.getString("email"),
+                    userDoc.getInteger("roleId")
+            );
+            userList.add(user);
+        }
+        return userList;
     }
 }

@@ -3,21 +3,19 @@ package edu.cmu.designit.server.models;
 
 public class User {
     private String id;
-    private String userId;
     private String fullName;
     private String userAvatar;
     private String email;
-    private String roleId;
+    private int roleId;
     private String phoneNumber;
     private String password;
     private String salt;
     private String companyName;
     private String preferredJob;
 
-    public User(String id, String userId, String fullName,
-                String email, String roleId, String password, String salt) {
+    public User(String id, String fullName,
+                String email, int roleId, String password, String salt) {
         this.id = id;
-        this.userId = userId;
         this.fullName = fullName;
         this.email = email;
         this.roleId = roleId;
@@ -25,9 +23,8 @@ public class User {
         this.salt = salt;
     }
 
-    public User(String id, String userId, String fullName, String email, String roleId) {
+    public User(String id, String fullName, String email, int roleId) {
         this.id = id;
-        this.userId = userId;
         this.fullName = fullName;
         this.email = email;
         this.roleId = roleId;
@@ -39,14 +36,6 @@ public class User {
 
     public void setId(String id) {
         this.id = id;
-    }
-
-    public String getUserId() {
-        return userId;
-    }
-
-    public void setUserId(String userId) {
-        this.userId = userId;
     }
 
     public String getFullName() {
@@ -73,11 +62,11 @@ public class User {
         this.email = email;
     }
 
-    public String getRoleId() {
+    public int getRoleId() {
         return roleId;
     }
 
-    public void setRoleId(String roleId) {
+    public void setRoleId(int roleId) {
         this.roleId = roleId;
     }
 

@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import com.mongodb.client.MongoCollection;
 import edu.cmu.designit.server.http.exceptions.HttpBadRequestException;
 import edu.cmu.designit.server.http.responses.AppResponse;
+import edu.cmu.designit.server.managers.DraftManager;
 import edu.cmu.designit.server.managers.LikeManager;
 import edu.cmu.designit.server.models.Like;
 import edu.cmu.designit.server.utils.AppLogger;
@@ -46,6 +47,7 @@ public class LikeHttpInterface extends HttpInterface {
                     date
             );
             LikeManager.getInstance().createLike(newLike);
+            DraftManager.getInstance().updateDraftLikeCount(newLike, 1);
             return new AppResponse("Insert Successful");
         } catch (Exception e) {
             throw handleException("POST likes", e);
@@ -106,7 +108,15 @@ public class LikeHttpInterface extends HttpInterface {
     public AppResponse deleteLikes(@QueryParam("draftId") String draftId,
                                    @QueryParam("likerId") String likerId){
         try {
+            Like newLike = new Like (
+                    null,
+                    draftId,
+                    null,
+                    likerId,
+                    null
+            );
             LikeManager.getInstance().deleteLike(draftId, likerId);
+            DraftManager.getInstance().updateDraftLikeCount(newLike, -1);
             return new AppResponse("Delete Successful");
         } catch (Exception e){
             throw handleException("DELETE likes/", e);
