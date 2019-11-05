@@ -187,7 +187,7 @@ public class UserHttpInterface extends HttpInterface{
     @Path("/{id}")
     @Consumes({ MediaType.APPLICATION_JSON})
     @Produces({ MediaType.APPLICATION_JSON})
-    public AppResponse patchUsers(HttpHeaders headers, Object request, @PathParam("id") String id){
+    public AppResponse patchUsers(@Context HttpHeaders headers, Object request, @PathParam("id") String id){
         JSONObject json = null;
         try{
             json = new JSONObject(ow.writeValueAsString(request));
@@ -217,32 +217,6 @@ public class UserHttpInterface extends HttpInterface{
             return new AppResponse("Delete Successful");
         } catch (Exception e){
             throw handleException("DELETE users/{userId}", e);
-        }
-    }
-
-    @GET
-    @Path("/login")
-    @Consumes({ MediaType.APPLICATION_JSON })
-    @Produces({MediaType.APPLICATION_JSON})
-    public AppResponse checkAuthentication(Object request){
-        JSONObject json = null;
-        UserManager userManager = UserManager.getInstance();
-        try {
-            json = new JSONObject(ow.writeValueAsString(request));
-            String email = json.getString("email");
-            //If there 0 or more than 1 users in the db, return failed
-            ArrayList<User> userArrayList = userManager.getUserByEmail(email);
-            if(userArrayList.size() != 1) {
-                return new AppResponse("Failed");
-            }
-            boolean result = userManager
-                    .checkAuthentication(email, json.getString("password"));
-            if(result)
-                return new AppResponse("Success");
-            else
-                return new AppResponse("Failed");
-        } catch (Exception e){
-            throw handleException("GET /users", e);
         }
     }
 

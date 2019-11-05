@@ -13,7 +13,7 @@ import javax.ws.rs.core.Response;
 
 @Path("/sessions")
 
-public class SessionHttpInterface extends MainHttpInterface {
+public class SessionHttpInterface extends HttpInterface {
   private SessionManager service;
   private ObjectWriter ow;
 
@@ -33,8 +33,12 @@ public class SessionHttpInterface extends MainHttpInterface {
   @Path("/login")
   @Consumes({ MediaType.APPLICATION_JSON})
   @Produces({ MediaType.APPLICATION_JSON})
-  public AppResponse create(Object request) throws Exception{
-    return new AppResponse(service.create(request));
+  public AppResponse create(Object request){
+    try{
+      return new AppResponse(service.create(request));
+    } catch (Exception e) {
+      throw handleException("POST login", e);
+    }
   }
 
 }

@@ -61,7 +61,7 @@ public class SessionManager extends Manager {
       user.setPassword(item.getString("password"));
       user.setSalt(item.getString("salt"));
 
-      if(PasswordUtils.verifyUserPassword(password, user.getPassword(), user.getSalt())) {
+      if(!PasswordUtils.verifyUserPassword(password, user.getPassword(), user.getSalt())) {
         throw new AppUnauthorizedException(0, "Authentication failed");
       }
 
