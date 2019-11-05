@@ -1,8 +1,6 @@
 package edu.cmu.designit.server.managers;
 
 import com.mongodb.BasicDBObject;
-import com.mongodb.DB;
-import com.mongodb.DBObject;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import edu.cmu.designit.server.exceptions.AppException;

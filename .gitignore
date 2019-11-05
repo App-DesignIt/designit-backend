@@ -1,7 +1,8 @@
-.gradle
-.idea
-build
-out
+/.gradle
+/.idea
+/build
+/out
 *.war
 *.jar
 *.class
+*.lock

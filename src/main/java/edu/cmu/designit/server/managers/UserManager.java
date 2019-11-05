@@ -5,7 +5,9 @@ import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import edu.cmu.designit.server.exceptions.AppException;
 import edu.cmu.designit.server.exceptions.AppInternalServerException;
+import edu.cmu.designit.server.exceptions.AppUnauthorizedException;
 import edu.cmu.designit.server.models.Draft;
+import edu.cmu.designit.server.models.Session;
 import edu.cmu.designit.server.models.User;
 import edu.cmu.designit.server.utils.MongoPool;
 import edu.cmu.designit.server.utils.PasswordUtils;
@@ -14,6 +16,7 @@ import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 import org.json.JSONObject;
 
+import javax.ws.rs.core.HttpHeaders;
 import java.lang.String;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
@@ -56,8 +59,13 @@ public class UserManager extends Manager {
         }
     }
 
-    public void updateUser(User user) throws AppException {
+    public void updateUser(HttpHeaders headers, User user) throws AppException {
         try {
+            Session session = SessionManager.getInstance().getSessionForToken(headers);
+            if(!session.getUserId().equals(user.getId())) {
+                throw new AppUnauthorizedException(70,"Invalid user id");
+            }
+
             Bson filter = new Document("_id", new ObjectId(user.getId()));
             Bson newValue = new Document()
                     .append("fullName", user.getFullName())
