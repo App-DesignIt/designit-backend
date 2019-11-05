@@ -187,7 +187,7 @@ public class UserHttpInterface extends HttpInterface{
     @Path("/{id}")
     @Consumes({ MediaType.APPLICATION_JSON})
     @Produces({ MediaType.APPLICATION_JSON})
-    public AppResponse patchUsers(Object request, @PathParam("id") String id){
+    public AppResponse patchUsers(HttpHeaders headers, Object request, @PathParam("id") String id){
         JSONObject json = null;
         try{
             json = new JSONObject(ow.writeValueAsString(request));
@@ -198,7 +198,7 @@ public class UserHttpInterface extends HttpInterface{
                     json.getInt("roleId")
             );
 
-            UserManager.getInstance().updateUser(user);
+            UserManager.getInstance().updateUser(headers, user);
 
         }catch (Exception e){
             throw handleException("PATCH users/{id}", e);
