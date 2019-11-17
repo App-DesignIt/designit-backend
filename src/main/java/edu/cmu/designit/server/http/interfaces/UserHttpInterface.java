@@ -160,7 +160,7 @@ public class UserHttpInterface extends HttpInterface{
     public AppResponse getLikeByLiker(@Context HttpHeaders headers, @PathParam("userId") String userId){
         try {
             AppLogger.info("Got an API call");
-            ArrayList<Like> likes = LikeManager.getInstance().getLikebyUser(userId);
+            ArrayList<Like> likes = LikeManager.getInstance().getLikeByUser(userId);
 
             if(likes != null)
                 return new AppResponse(likes);

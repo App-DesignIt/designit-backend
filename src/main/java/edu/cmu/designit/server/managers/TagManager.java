@@ -5,7 +5,6 @@ import com.mongodb.client.MongoCollection;
 import edu.cmu.designit.server.exceptions.AppException;
 import edu.cmu.designit.server.exceptions.AppInternalServerException;
 import edu.cmu.designit.server.models.Tag;
-import edu.cmu.designit.server.models.User;
 import edu.cmu.designit.server.utils.MongoPool;
 import org.bson.Document;
 import org.bson.conversions.Bson;
@@ -14,11 +13,11 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 
 public class TagManager extends Manager{
-    public static TagManager _self;
+    private static TagManager _self;
     private MongoCollection<Document> tagCollection;
 
 
-    public TagManager() {
+    private TagManager() {
         this.tagCollection = MongoPool.getInstance().getCollection("tags");
     }
 
@@ -30,8 +29,6 @@ public class TagManager extends Manager{
 
     public void createTag(Tag tag) throws AppException {
         try {
-            JSONObject json = new JSONObject(tag);
-
             Document newDoc = new Document()
                     .append("tagName", tag.getTagName())
                     .append("tagCount", tag.getTagCount());
@@ -90,7 +87,7 @@ public class TagManager extends Manager{
         try {
             Bson filter = new Document("tagName", tagName);
             tagCollection.deleteOne(filter);
-        }catch (Exception e){
+        } catch (Exception e){
             throw handleException("Delete tagName", e);
         }
     }

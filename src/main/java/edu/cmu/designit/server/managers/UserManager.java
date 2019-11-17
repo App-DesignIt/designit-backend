@@ -19,11 +19,11 @@ import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 public class UserManager extends Manager {
-    public static UserManager _self;
+    private static UserManager _self;
     private MongoCollection<Document> userCollection;
     private MongoCollection<Document> draftCollection;
 
-    public UserManager() {
+    private UserManager() {
         this.userCollection = MongoPool.getInstance().getCollection("users");
         this.draftCollection = MongoPool.getInstance().getCollection("drafts");
     }
@@ -37,8 +37,6 @@ public class UserManager extends Manager {
 
     public void createUser(User user) throws AppException {
         try {
-            JSONObject json = new JSONObject(user);
-
             Document newDoc = new Document()
                     .append("fullName", user.getFullName())
                     .append("email", user.getEmail())
@@ -98,8 +96,7 @@ public class UserManager extends Manager {
         try{
             Bson filter = new Document("userId", userId);
             FindIterable<Document> draftDocs = draftCollection.find(filter);
-            ArrayList<Draft> draftList = DraftManager.getInstance().convertDocsToArrayList(draftDocs);
-            return draftList;
+            return DraftManager.getInstance().convertDocsToArrayList(draftDocs);
         } catch (Exception e) {
             throw handleException("Get Draft List By User Id", e);
         }
@@ -174,7 +171,7 @@ public class UserManager extends Manager {
                 userList.add(user);
             }
             return PasswordUtils.verifyUserPassword(password, userList.get(0).getPassword(), userList.get(0).getSalt());
-        } catch(Exception e){
+        } catch (Exception e){
             throw handleException("Get User List", e);
         }
     }

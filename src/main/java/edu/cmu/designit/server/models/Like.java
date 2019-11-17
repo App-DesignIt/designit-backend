@@ -1,6 +1,5 @@
 package edu.cmu.designit.server.models;
 
-import java.util.Calendar;
 import java.util.Date;
 
 public class Like {
