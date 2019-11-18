@@ -6,6 +6,7 @@ import com.mongodb.client.MongoCollection;
 import edu.cmu.designit.server.exceptions.AppException;
 import edu.cmu.designit.server.exceptions.AppInternalServerException;
 import edu.cmu.designit.server.exceptions.AppUnauthorizedException;
+import edu.cmu.designit.server.models.ChallengeSubmission;
 import edu.cmu.designit.server.models.Draft;
 import edu.cmu.designit.server.models.Session;
 import edu.cmu.designit.server.models.User;
@@ -25,10 +26,12 @@ public class UserManager extends Manager {
     private static UserManager _self;
     private MongoCollection<Document> userCollection;
     private MongoCollection<Document> draftCollection;
+    private MongoCollection<Document> challengeSubmissionCollection;
 
     private UserManager() {
         this.userCollection = MongoPool.getInstance().getCollection("users");
         this.draftCollection = MongoPool.getInstance().getCollection("drafts");
+        this.challengeSubmissionCollection = MongoPool.getInstance().getCollection("challenge_submissions");
     }
 
     public static UserManager getInstance(){
@@ -107,6 +110,16 @@ public class UserManager extends Manager {
             return DraftManager.getInstance().convertDocsToArrayList(draftDocs);
         } catch (Exception e) {
             throw handleException("Get Draft List By User Id", e);
+        }
+    }
+
+    public ArrayList<ChallengeSubmission> getChallengeSubmissionListByUserId(String userId) throws AppException {
+        try{
+            Bson filter = new Document("userId", userId);
+            FindIterable<Document> challengeSubmissionDocs = challengeSubmissionCollection.find(filter);
+            return ChallengeSubmissionManager.getInstance().convertDocsToArrayList(challengeSubmissionDocs);
+        } catch (Exception e) {
+            throw handleException("Get Challenge Submission List By User Id", e);
         }
     }
 

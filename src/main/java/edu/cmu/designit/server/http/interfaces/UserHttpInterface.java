@@ -7,8 +7,10 @@ import com.mongodb.client.MongoCollection;
 import edu.cmu.designit.server.http.exceptions.HttpBadRequestException;
 import edu.cmu.designit.server.http.responses.AppResponse;
 import edu.cmu.designit.server.http.utils.PATCH;
+import edu.cmu.designit.server.managers.ChallengeSubmissionManager;
 import edu.cmu.designit.server.managers.DraftManager;
 import edu.cmu.designit.server.managers.LikeManager;
+import edu.cmu.designit.server.models.ChallengeSubmission;
 import edu.cmu.designit.server.models.Draft;
 import edu.cmu.designit.server.models.Like;
 import edu.cmu.designit.server.models.User;
@@ -17,6 +19,7 @@ import edu.cmu.designit.server.utils.*;
 import edu.cmu.designit.server.utils.AppLogger;
 import org.bson.Document;
 import org.json.JSONObject;
+import sun.reflect.annotation.ExceptionProxy;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
@@ -151,6 +154,18 @@ public class UserHttpInterface extends HttpInterface{
             return new AppResponse(drafts);
         } catch (Exception e) {
             throw handleException("GET /users/{userId}/drafts", e);
+        }
+    }
+
+    @GET
+    @Path("/{userId}/challenge_submissions")
+    @Produces({MediaType.APPLICATION_JSON})
+    public AppResponse getChallengeSubmissionsByUserId(@Context HttpHeaders headers, @PathParam("userId") String userId) {
+        try {
+            ArrayList<ChallengeSubmission> challengeSubmissions = UserManager.getInstance().getChallengeSubmissionListByUserId(userId);
+            return new AppResponse(challengeSubmissions);
+        } catch (Exception e) {
+            throw handleException("GET /users/{userId}/challenge_submissions", e);
         }
     }
 
