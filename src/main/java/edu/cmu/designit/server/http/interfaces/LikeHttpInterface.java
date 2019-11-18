@@ -75,7 +75,7 @@ public class LikeHttpInterface extends HttpInterface {
     public AppResponse getLikeByLiker(@Context HttpHeaders headers, @PathParam("likerId") String likerId){
         try {
             AppLogger.info("Got an API call");
-            ArrayList<Like> likes = LikeManager.getInstance().getLikebyUser(likerId);
+            ArrayList<Like> likes = LikeManager.getInstance().getLikeByUser(likerId);
 
             if(likes != null)
                 return new AppResponse(likes);
@@ -92,7 +92,7 @@ public class LikeHttpInterface extends HttpInterface {
     public AppResponse getLikerByDraft(@Context HttpHeaders headers, @PathParam("draftId") String draftId){
         try {
             AppLogger.info("Got an API call");
-            ArrayList<Like> likes = LikeManager.getInstance().getLikebyDraft(draftId);
+            ArrayList<Like> likes = LikeManager.getInstance().getLikeByDraft(draftId);
 
             if(likes != null)
                 return new AppResponse(likes);

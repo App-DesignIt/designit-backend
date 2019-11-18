@@ -8,16 +8,15 @@ import edu.cmu.designit.server.models.Like;
 import edu.cmu.designit.server.utils.MongoPool;
 import org.bson.Document;
 import org.bson.conversions.Bson;
-import org.json.JSONObject;
 
 import java.util.*;
 
 public class LikeManager extends Manager {
-    public static LikeManager _self;
+    private static LikeManager _self;
     private MongoCollection<Document> likeCollection;
 
 
-    public LikeManager() {
+    private LikeManager() {
         this.likeCollection = MongoPool.getInstance().getCollection("likes");
     }
 
@@ -29,8 +28,6 @@ public class LikeManager extends Manager {
 
     public void createLike(Like like) throws AppException {
         try {
-            JSONObject json = new JSONObject(like);
-
             Document newDoc = new Document()
                     .append("draftId", like.getDraftId())
                     .append("ownerId", like.getOwnerId())
@@ -49,62 +46,28 @@ public class LikeManager extends Manager {
 
     public ArrayList<Like> getLikeList() throws AppException {
         try{
-            ArrayList<Like> likeList = new ArrayList<>();
             FindIterable<Document> likeDocs = likeCollection.find();
-            for(Document likeDoc: likeDocs) {
-                Like like = new Like(
-                        likeDoc.getObjectId("_id").toString(),
-                        likeDoc.getString("draftId"),
-                        likeDoc.getString("ownerId"),
-                        likeDoc.getString("likerId"),
-                        (Date) likeDoc.get("date")
-                );
-                String str = likeDoc.get("date").toString();
-                likeList.add(like);
-            }
-            return new ArrayList<>(likeList);
+            return convertDocsToArrayList(likeDocs);
         } catch(Exception e){
             throw handleException("Get User List", e);
         }
     }
 
-    public ArrayList<Like> getLikebyUser(String likerId) throws AppException {
+    public ArrayList<Like> getLikeByUser(String likerId) throws AppException {
         try {
-            ArrayList<Like> likeList = new ArrayList<>();
             Bson filter = new Document("likerId", likerId);
             FindIterable<Document> likeDocs = likeCollection.find(filter);
-            for(Document likeDoc: likeDocs) {
-                Like like = new Like(
-                        likeDoc.getObjectId("_id").toString(),
-                        likeDoc.getString("draftId"),
-                        likeDoc.getString("ownerId"),
-                        likeDoc.getString("likerId"),
-                        (Date) likeDoc.get("date")
-                );
-                likeList.add(like);
-            }
-            return new ArrayList<>(likeList);
+            return convertDocsToArrayList(likeDocs);
         } catch (Exception e){
             throw handleException("Get LikeByLiker List", e);
         }
     }
 
-    public ArrayList<Like> getLikebyDraft(String draftId) throws AppException {
+    public ArrayList<Like> getLikeByDraft(String draftId) throws AppException {
         try {
-            ArrayList<Like> likeList = new ArrayList<>();
             Bson filter = new Document("draftId", draftId);
             FindIterable<Document> likeDocs = likeCollection.find(filter);
-            for(Document likeDoc: likeDocs) {
-                Like like = new Like(
-                        likeDoc.getObjectId("_id").toString(),
-                        likeDoc.getString("draftId"),
-                        likeDoc.getString("ownerId"),
-                        likeDoc.getString("likerId"),
-                        (Date) likeDoc.get("date")
-                );
-                likeList.add(like);
-            }
-            return new ArrayList<>(likeList);
+            return convertDocsToArrayList(likeDocs);
         } catch (Exception e){
             throw handleException("Get Like List", e);
         }
@@ -120,5 +83,20 @@ public class LikeManager extends Manager {
         }catch (Exception e){
             throw handleException("Delete Like", e);
         }
+    }
+
+    private ArrayList<Like> convertDocsToArrayList(FindIterable<Document> likeDocs) {
+        ArrayList<Like> likeList = new ArrayList<>();
+        for(Document likeDoc: likeDocs) {
+            Like like = new Like(
+                    likeDoc.getObjectId("_id").toString(),
+                    likeDoc.getString("draftId"),
+                    likeDoc.getString("ownerId"),
+                    likeDoc.getString("likerId"),
+                    (Date) likeDoc.get("date")
+            );
+            likeList.add(like);
+        }
+        return likeList;
     }
 }
