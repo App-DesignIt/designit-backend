@@ -37,8 +37,9 @@ public class DraftManager extends Manager {
               .append("description", draft.getDescription())
               .append("imageUrl", draft.getImageUrl())
               .append("likedCount", 0)
+              .append("rateNumber", 1)
               .append("viewNumber", 0)
-              .append("userScore", 0.0)
+              .append("userScore", 10.0)
               .append("createTime", new Date())
               .append("modifyTime", new Date());
 
@@ -62,6 +63,7 @@ public class DraftManager extends Manager {
               .append("title", draft.getTitle())
               .append("description", draft.getDescription())
               .append("likedCount", draft.getLikedCount())
+              .append("rateNumber", draft.getRateNumber())
               .append("viewNumber", draft.getViewNumber())
               .append("userScore", draft.getUserScore())
               .append("createTime", draft.getCreateTime())
@@ -195,6 +197,7 @@ public class DraftManager extends Manager {
               draftDoc.getString("description"),
               draftDoc.getString("imageUrl"),
               draftDoc.getInteger("likedCount"),
+              draftDoc.getInteger("rateNumber"),
               draftDoc.getInteger("viewNumber"),
               draftDoc.getDouble("userScore"),
               draftDoc.getDate("createTime"),

@@ -134,6 +134,7 @@ public class DraftHttpInterface extends HttpInterface{
               json.getString("description"),
               json.getString("imageUrl"),
               json.getInt("likedCount"),
+              json.getInt("rateNumber"),
               json.getInt("viewNumber"),
               json.getDouble("userScore"),
               new Date(json.getLong("createTime")),

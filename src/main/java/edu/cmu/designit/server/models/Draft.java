@@ -1,6 +1,4 @@
 package edu.cmu.designit.server.models;
-
-import java.sql.Timestamp;
 import java.util.Date;
 
 public class Draft {
@@ -10,18 +8,11 @@ public class Draft {
   private String description;
   private String imageUrl;
   private int likedCount;
+  private int rateNumber;
   private int viewNumber;
   private double userScore;
   private Date createTime;
   private Date modifyTime;
-
-  public String getImageUrl() {
-    return imageUrl;
-  }
-
-  public void setImageUrl(String imageUrl) {
-    this.imageUrl = imageUrl;
-  }
 
   //for creating new draft
   public Draft(String userId, String title, String description, String imageUrl) {
@@ -32,13 +23,14 @@ public class Draft {
   }
 
   //for patch
-  public Draft(String id, String userId, String title, String description, String imageUrl, int likedCount, int viewNumber, double userScore, Date createTime, Date modifyTime) {
+  public Draft(String id, String userId, String title, String description, String imageUrl, int likedCount, int rateNumber, int viewNumber, double userScore, Date createTime, Date modifyTime) {
     this.id = id;
     this.userId = userId;
     this.title = title;
     this.description = description;
     this.imageUrl = imageUrl;
     this.likedCount = likedCount;
+    this.rateNumber = rateNumber;
     this.viewNumber = viewNumber;
     this.userScore = userScore;
     this.createTime = createTime;
@@ -77,12 +69,28 @@ public class Draft {
     this.description = description;
   }
 
+  public String getImageUrl() {
+    return imageUrl;
+  }
+
+  public void setImageUrl(String imageUrl) {
+    this.imageUrl = imageUrl;
+  }
+
   public int getLikedCount() {
     return likedCount;
   }
 
   public void setLikedCount(int likedCount) {
     this.likedCount = likedCount;
+  }
+
+  public int getRateNumber() {
+    return rateNumber;
+  }
+
+  public void setRateNumber(int rateNumber) {
+    this.rateNumber = rateNumber;
   }
 
   public int getViewNumber() {
