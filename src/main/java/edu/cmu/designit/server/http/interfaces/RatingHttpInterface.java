@@ -3,9 +3,12 @@ package edu.cmu.designit.server.http.interfaces;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.mongodb.client.MongoCollection;
+import edu.cmu.designit.server.exceptions.AppBadRequestException;
+import edu.cmu.designit.server.exceptions.AppInternalServerException;
 import edu.cmu.designit.server.http.exceptions.HttpBadRequestException;
 import edu.cmu.designit.server.http.responses.AppResponse;
 import edu.cmu.designit.server.http.utils.PATCH;
+import edu.cmu.designit.server.managers.DraftManager;
 import edu.cmu.designit.server.managers.RatingManager;
 import edu.cmu.designit.server.models.Rating;
 import edu.cmu.designit.server.utils.AppLogger;
@@ -16,13 +19,13 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Date;
 
 @Path("/ratings")
 public class RatingHttpInterface extends HttpInterface {
     private ObjectWriter ow;
-    private MongoCollection<Document> ratingCollection = null;
 
     public RatingHttpInterface() {
         ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
@@ -33,19 +36,14 @@ public class RatingHttpInterface extends HttpInterface {
     @Produces({MediaType.APPLICATION_JSON})
     public AppResponse postRating(Object request){
         try {
-            JSONObject json = null;
-            json = new JSONObject(ow.writeValueAsString(request));
-
-            Date date = new Date();
-            Rating rating = new Rating (
-                    null,
-                    json.getString("draftId"),
-                    json.getString("userId"),
-                    json.getDouble("score"),
-                    date,
-                    date
-            );
-
+            JSONObject json =  new JSONObject(ow.writeValueAsString(request));
+            String userId = json.getString("userId");
+            String draftId = json.getString("draftId");
+            ArrayList<Rating> ratings = RatingManager.getInstance().getRatingByUserAndDraft(userId, draftId);
+            if(ratings != null) {
+                throw new AppInternalServerException(500, "The rating from this user to this draft already exists.");
+            }
+            Rating rating = new Rating (null, draftId, userId, json.getDouble("score"), new Date(), new Date());
             RatingManager.getInstance().createRating(rating);
             return new AppResponse("Insert Successful");
         } catch (Exception e) {
@@ -125,24 +123,23 @@ public class RatingHttpInterface extends HttpInterface {
     public AppResponse changeScore(Object request,
                                    @QueryParam("userId") String userId,
                                    @QueryParam("draftId") String draftId){
-        JSONObject json = null;
         try {
             ArrayList<Rating> ratingList = RatingManager.getInstance().getRatingByUserAndDraft(userId, draftId);
             if(ratingList.isEmpty()) {
                 return new AppResponse("No such rating with given user: "
                         + userId + " with given draft: " + draftId);
             }
-            json = new JSONObject(ow.writeValueAsString(request));
-            Date date = new Date();
-            Rating rating = new Rating (
+            double originalRating = ratingList.get(0).getScore();
+            JSONObject json = new JSONObject(ow.writeValueAsString(request));
+            Rating newRating = new Rating (
                     ratingList.get(0).getId(),
                     null,
                     null,
                     json.getDouble("score"),
                     null,
-                    date
+                    new Date()
             );
-            RatingManager.getInstance().updateRating(rating);
+            RatingManager.getInstance().updateRating(originalRating, newRating, draftId);
         } catch (Exception e){
             throw handleException("PATCH ratings", e);
         }
