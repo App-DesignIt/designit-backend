@@ -74,7 +74,6 @@ public class ChallengeManager extends Manager {
               .append("startTime", challenge.getStartTime())
               .append("endTime", challenge.getEndTime())
               .append("winnerPrize", challenge.getWinnerPrize())
-              .append("createTime", challenge.getCreateTime())
               .append("modifyTime", new Date());
       Bson updateOperationDocument = new Document("$set", newValue);
 

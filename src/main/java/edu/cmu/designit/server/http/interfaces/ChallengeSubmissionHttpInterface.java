@@ -106,9 +106,9 @@ public class ChallengeSubmissionHttpInterface extends HttpInterface {
               challengeSubmissionId,
               json.getInt("ranking"),
               json.getString("draftId"),
-              json.getString("userId"),
-              json.getString("challengeId"),
-              new Date(json.getLong("submissionTime")),
+              null,
+              null,
+              new Date(),
               json.getDouble("recruiterScore"),
               json.getDouble("finalScore")
       );

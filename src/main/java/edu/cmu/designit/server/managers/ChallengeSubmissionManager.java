@@ -57,8 +57,6 @@ public class ChallengeSubmissionManager extends Manager {
       Bson newValue = new Document()
               .append("ranking", challengeSubmission.getRanking())
               .append("draftId", challengeSubmission.getDraftId())
-              .append("userId", challengeSubmission.getUserId())
-              .append("challengeId", challengeSubmission.getChallengeId())
               .append("submissionTime", challengeSubmission.getSubmissionTime())
               .append("recruiterScore", challengeSubmission.getRecruiterScore())
               .append("finalScore", challengeSubmission.getFinalScore());
@@ -96,7 +94,7 @@ public class ChallengeSubmissionManager extends Manager {
 
   public ArrayList<ChallengeSubmission> getChallengeSubmissionsByChallengeId(String challengeId) throws AppException {
     try {
-      Bson filter = new Document("challengeId", new ObjectId(challengeId));
+      Bson filter = new Document("challengeId", challengeId);
       FindIterable<Document> challengeSubmissionDocs = challengeSubmissionCollection.find(filter);
       return convertDocsToArrayList(challengeSubmissionDocs);
     } catch (Exception e) {

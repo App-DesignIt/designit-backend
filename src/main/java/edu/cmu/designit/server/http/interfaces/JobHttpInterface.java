@@ -19,6 +19,7 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import java.util.ArrayList;
 
+@Path("/jobs")
 public class JobHttpInterface extends HttpInterface {
   private ObjectWriter ow;
   private MongoCollection<Document> jobCollection = null;
