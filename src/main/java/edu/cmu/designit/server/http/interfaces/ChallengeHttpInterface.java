@@ -144,8 +144,8 @@ public class ChallengeHttpInterface extends HttpInterface  {
               new Date(json.getLong("startTime")),
               new Date(json.getLong("endTime")),
               json.getDouble("winnerPrize"),
-              new Date(json.getLong("createTime")),
-              new Date(json.getLong("modifyTime"))
+              null,
+              new Date()
       );
 
       ChallengeManager.getInstance().updateChallenge(challenge);

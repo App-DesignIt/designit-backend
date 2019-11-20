@@ -45,13 +45,13 @@ public class RatingManager extends Manager {
                     .append("createTime", rating.getCreateTime())
                     .append("modifyTime", rating.getModifyTime());
             if (newDoc != null) {
-                ratingCollection.insertOne(newDoc);
                 Bson filter = new Document("_id", new ObjectId(draftId));
                 Draft draft = DraftManager.getInstance().getDraftById(draftId).get(0);
                 int rateNumber = draft.getRateNumber();
                 double userScore = draft.getUserScore();
                 Bson newValue = new Document().append("userScore", (userScore * rateNumber + score) / (rateNumber + 1)).append("rateNumber", rateNumber + 1);
                 draftCollection.updateOne(filter, new Document("$set", newValue));
+                ratingCollection.insertOne(newDoc);
             } else {
                 throw new AppInternalServerException(0, "Failed to create new rating relation");
             }

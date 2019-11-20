@@ -40,7 +40,7 @@ public class RatingHttpInterface extends HttpInterface {
             String userId = json.getString("userId");
             String draftId = json.getString("draftId");
             ArrayList<Rating> ratings = RatingManager.getInstance().getRatingByUserAndDraft(userId, draftId);
-            if(ratings != null) {
+            if(ratings.size() != 0) {
                 throw new AppInternalServerException(500, "The rating from this user to this draft already exists.");
             }
             Rating rating = new Rating (null, draftId, userId, json.getDouble("score"), new Date(), new Date());
