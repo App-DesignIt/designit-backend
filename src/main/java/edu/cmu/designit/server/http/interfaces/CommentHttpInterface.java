@@ -92,7 +92,7 @@ public class CommentHttpInterface extends HttpInterface{
     public AppResponse getCommentsByDraft(@Context HttpHeaders headers, @PathParam("draftId") String draftId){
         try {
             AppLogger.info("Got an API call");
-            ArrayList<Comment> comments = CommentManager.getInstance().getCommentByDraft(draftId);
+            ArrayList<Comment> comments = CommentManager.getInstance().getCommentByDraftId(draftId);
 
             if(comments != null)
                 return new AppResponse(comments);

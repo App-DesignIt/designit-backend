@@ -7,14 +7,8 @@ import com.mongodb.client.MongoCollection;
 import edu.cmu.designit.server.http.exceptions.HttpBadRequestException;
 import edu.cmu.designit.server.http.responses.AppResponse;
 import edu.cmu.designit.server.http.utils.PATCH;
-import edu.cmu.designit.server.managers.ChallengeSubmissionManager;
-import edu.cmu.designit.server.managers.DraftManager;
-import edu.cmu.designit.server.managers.LikeManager;
-import edu.cmu.designit.server.models.ChallengeSubmission;
-import edu.cmu.designit.server.models.Draft;
-import edu.cmu.designit.server.models.Like;
-import edu.cmu.designit.server.models.User;
-import edu.cmu.designit.server.managers.UserManager;
+import edu.cmu.designit.server.managers.*;
+import edu.cmu.designit.server.models.*;
 import edu.cmu.designit.server.utils.*;
 import edu.cmu.designit.server.utils.AppLogger;
 import org.bson.Document;
@@ -126,6 +120,23 @@ public class UserHttpInterface extends HttpInterface{
                 throw new HttpBadRequestException(0, "Problem with getting users");
         }catch (Exception e){
             throw handleException("GET /users/{userId}", e);
+        }
+    }
+
+    @GET
+    @Path("/{userId}/comments")
+    @Produces({MediaType.APPLICATION_JSON})
+    public AppResponse getUserComment(@Context HttpHeaders headers, @PathParam("userId") String userId){
+        try {
+            AppLogger.info("Got an API call");
+            ArrayList<Comment> comments = CommentManager.getInstance().getCommentByUserId(userId);
+
+            if(comments != null)
+                return new AppResponse(comments);
+            else
+                throw new HttpBadRequestException(0, "Problem with getting all comments from one user");
+        } catch (Exception e){
+            throw handleException("GET /{userId}/comments", e);
         }
     }
 

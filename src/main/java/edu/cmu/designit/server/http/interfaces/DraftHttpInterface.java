@@ -7,7 +7,9 @@ import com.mongodb.client.MongoCollection;
 import edu.cmu.designit.server.http.exceptions.HttpBadRequestException;
 import edu.cmu.designit.server.http.responses.AppResponse;
 import edu.cmu.designit.server.http.utils.PATCH;
+import edu.cmu.designit.server.managers.CommentManager;
 import edu.cmu.designit.server.managers.DraftManager;
+import edu.cmu.designit.server.models.Comment;
 import edu.cmu.designit.server.models.Draft;
 import edu.cmu.designit.server.utils.AppLogger;
 import org.bson.Document;
@@ -116,6 +118,23 @@ public class DraftHttpInterface extends HttpInterface{
         throw new HttpBadRequestException(0, "Problem with getting drafts");
     }catch (Exception e){
       throw handleException("GET /drafts/{draftId}", e);
+    }
+  }
+
+  @GET
+  @Path("/{draftId}/comments")
+  @Produces({MediaType.APPLICATION_JSON})
+  public AppResponse getDraftComment(@Context HttpHeaders headers, @PathParam("draftId") String draftId){
+    try {
+      AppLogger.info("Got an API call");
+      ArrayList<Comment> comments = CommentManager.getInstance().getCommentByDraftId(draftId);
+
+      if(comments != null)
+        return new AppResponse(comments);
+      else
+        throw new HttpBadRequestException(0, "Problem with getting all comments from one draft");
+    } catch (Exception e){
+      throw handleException("GET /{draftId}/comments", e);
     }
   }
 
