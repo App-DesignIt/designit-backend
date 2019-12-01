@@ -64,9 +64,18 @@ public class CommentManager extends Manager{
         }
     }
 
-    public ArrayList<Comment> getCommentByDraft(String draftId) throws AppException {
+    public ArrayList<Comment> getCommentByDraftId(String draftId) throws AppException {
         try {
             Bson filter = new Document("draftId", draftId);
+            return convertDocsToArrayList(commentCollection.find(filter));
+        } catch (Exception e){
+            throw handleException("Get Comment List", e);
+        }
+    }
+
+    public ArrayList<Comment> getCommentByUserId(String userId) throws AppException {
+        try {
+            Bson filter = new Document("userId", userId);
             return convertDocsToArrayList(commentCollection.find(filter));
         } catch (Exception e){
             throw handleException("Get Comment List", e);
