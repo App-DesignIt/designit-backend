@@ -170,4 +170,36 @@ public class ChallengeHttpInterface extends HttpInterface  {
     }
   }
 
+  @GET
+  @Path("/{challengeId}/calculateScore")
+  @Consumes({ MediaType.APPLICATION_JSON })
+  @Produces({ MediaType.APPLICATION_JSON })
+  public AppResponse calculateScore(@PathParam("challengeId") String challengeId) {
+    try{
+      ArrayList<ChallengeSubmission> submissions = ChallengeManager.getInstance().calculateAllSubmissionScore(challengeId);
+      if(submissions != null)
+        return new AppResponse(submissions);
+      else
+        throw new HttpBadRequestException(0, "Problem with calculating score by challenge id");
+    } catch(Exception e) {
+      throw handleException("GET challenges/{challengeId}/calculateScore", e);
+    }
+  }
+
+  @GET
+  @Path("/{challengeId}/winners")
+  @Consumes({ MediaType.APPLICATION_JSON })
+  @Produces({ MediaType.APPLICATION_JSON })
+  public AppResponse getWinners(@PathParam("challengeId") String challengeId) {
+    try{
+      ArrayList<ChallengeSubmission> winners = ChallengeManager.getInstance().getWinners(challengeId);
+      if(winners != null)
+        return new AppResponse(winners);
+      else
+        throw new HttpBadRequestException(0, "Problem with getting winners by challenge id");
+    } catch(Exception e) {
+      throw handleException("GET challenges/{challengeId}/winners", e);
+    }
+  }
+
 }

@@ -19,9 +19,11 @@ import java.util.Date;
 public class ChallengeSubmissionManager extends Manager {
   public static ChallengeSubmissionManager _self;
   private MongoCollection<Document> challengeSubmissionCollection;
+  private MongoCollection<Document> draftCollection;
 
   public ChallengeSubmissionManager() {
     this.challengeSubmissionCollection = MongoPool.getInstance().getCollection("challenge_submissions");
+    this.draftCollection = MongoPool.getInstance().getCollection("drafts");
   }
 
   public static ChallengeSubmissionManager getInstance() {
@@ -148,6 +150,25 @@ public class ChallengeSubmissionManager extends Manager {
       return convertDocsToArrayList(challengeSubmissionDocs);
     } catch(Exception e){
       throw handleException("Get Challenge Submission List", e);
+    }
+  }
+
+  public void calculateChallengeSubmissionScore(String challengeSubmissionId) throws AppException {
+    try {
+      ChallengeSubmission challengeSubmission = getChallengeSubmissionById(challengeSubmissionId).get(0);
+      String draftId = challengeSubmission.getDraftId();
+      double userScore = DraftManager.getInstance().getDraftById(draftId).get(0).getUserScore();
+      double score = 0.4 * userScore + 0.6 * challengeSubmission.getRecruiterScore();
+      Bson filter = new Document("_id", new ObjectId(challengeSubmissionId));
+      Bson newValue = new Document().append("finalScore", score);
+      Bson updateOperationDocument = new Document("$set", newValue);
+      if (newValue != null)
+        challengeSubmissionCollection.updateOne(filter, updateOperationDocument);
+      else
+        throw new AppInternalServerException(0, "Failed to calculate challenge submission score");
+
+    } catch (Exception e) {
+      throw handleException("Get Challenge Submission Score", e);
     }
   }
 
