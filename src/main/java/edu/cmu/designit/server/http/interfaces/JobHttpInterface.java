@@ -3,14 +3,20 @@ package edu.cmu.designit.server.http.interfaces;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.mongodb.client.MongoCollection;
+import edu.cmu.designit.server.exceptions.AppException;
 import edu.cmu.designit.server.http.exceptions.HttpBadRequestException;
 import edu.cmu.designit.server.http.responses.AppResponse;
+import edu.cmu.designit.server.http.utils.PATCH;
+import edu.cmu.designit.server.managers.ChallengeManager;
 import edu.cmu.designit.server.managers.DraftManager;
 import edu.cmu.designit.server.managers.JobManager;
+import edu.cmu.designit.server.models.Challenge;
 import edu.cmu.designit.server.models.Draft;
 import edu.cmu.designit.server.models.Job;
 import edu.cmu.designit.server.utils.AppLogger;
 import org.bson.Document;
+import org.bson.conversions.Bson;
+import org.bson.types.ObjectId;
 import org.json.JSONObject;
 
 import javax.ws.rs.*;
@@ -18,6 +24,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import java.util.ArrayList;
+import java.util.Date;
 
 @Path("/jobs")
 public class JobHttpInterface extends HttpInterface {
@@ -96,6 +103,42 @@ public class JobHttpInterface extends HttpInterface {
       return new AppResponse(jobs);
     } catch (Exception e){
       throw handleException("GET /jobs", e);
+    }
+  }
+
+  @PATCH
+  @Path("/{jobId}")
+  @Consumes({ MediaType.APPLICATION_JSON})
+  @Produces({ MediaType.APPLICATION_JSON})
+  public AppResponse patchJob(Object request, @PathParam("jobId") String jobId){
+    try {
+      JSONObject json = new JSONObject(ow.writeValueAsString(request));
+      Job job = new Job(
+              jobId,
+              json.getString("name"),
+              json.getString("recruiterId"),
+              json.getString("companyName"),
+              json.getString("description"),
+              json.getString("address")
+      );
+      JobManager.getInstance().updateJob(job);
+    } catch (Exception e){
+      throw handleException("PATCH challenges/{challengeId}", e);
+    }
+
+    return new AppResponse("Update Successful");
+  }
+
+  @DELETE
+  @Path("/{jobId}")
+  @Consumes({ MediaType.APPLICATION_JSON })
+  @Produces({ MediaType.APPLICATION_JSON })
+  public AppResponse deleteDrafts(@PathParam("jobId") String jobId){
+    try{
+      JobManager.getInstance().deleteJob(jobId);
+      return new AppResponse("Delete Jobs Successful");
+    }catch (Exception e){
+      throw handleException("DELETE jobs/{jobId}", e);
     }
   }
 
