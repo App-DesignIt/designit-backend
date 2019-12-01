@@ -7,9 +7,7 @@ import edu.cmu.designit.server.exceptions.AppException;
 import edu.cmu.designit.server.exceptions.AppInternalServerException;
 import edu.cmu.designit.server.models.Challenge;
 import edu.cmu.designit.server.models.ChallengeSubmission;
-import edu.cmu.designit.server.models.Draft;
 import edu.cmu.designit.server.utils.MongoPool;
-import org.apache.http.auth.ChallengeState;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
@@ -21,9 +19,12 @@ import java.util.List;
 public class ChallengeManager extends Manager {
   public static ChallengeManager _self;
   private MongoCollection<Document> challengeCollection;
+  private MongoCollection<Document> challengeSubmissionCollection;
 
   public ChallengeManager() {
+
     this.challengeCollection = MongoPool.getInstance().getCollection("challenges");
+    this.challengeSubmissionCollection = MongoPool.getInstance().getCollection("challenge_submissions");
   }
 
   public static ChallengeManager getInstance() {
@@ -143,6 +144,40 @@ public class ChallengeManager extends Manager {
       return challengeList;
     } catch (Exception e) {
       throw handleException("Get Challenge List Filtered", e);
+    }
+  }
+
+  public ArrayList<ChallengeSubmission> calculateAllSubmissionScore(String challengeId) throws AppException {
+    try {
+      ArrayList<ChallengeSubmission> submissions = ChallengeSubmissionManager.getInstance().getChallengeSubmissionsByChallengeId(challengeId);
+      for(ChallengeSubmission submission : submissions) {
+        ChallengeSubmissionManager.getInstance().calculateChallengeSubmissionScore(submission.getId());
+      }
+      return ChallengeSubmissionManager.getInstance().getChallengeSubmissionsByChallengeId(challengeId);
+    } catch (Exception e) {
+      throw handleException("Calculate all submission score", e);
+    }
+  }
+
+  public ArrayList<ChallengeSubmission> getWinners(String challengeId) throws AppException {
+    try {
+      Bson filter = new Document("challengeId", challengeId);
+      BasicDBObject sortParams = new BasicDBObject();
+      sortParams.put("finalScore", -1);
+      FindIterable<Document> challengeSubmissionDocs = challengeSubmissionCollection.find(filter).sort(sortParams);
+      ArrayList<ChallengeSubmission> winners = ChallengeSubmissionManager.getInstance().convertDocsToArrayList(challengeSubmissionDocs);
+      int winnerNumber = winners.size() >= 3 ? 3 : winners.size();
+      for(int i = 1; i <= winnerNumber; i++) {
+        winners.get(i - 1).setRanking(i);
+        String winnerId = winners.get(i - 1).getId();
+        Bson winnerFilter = new Document("_id", new ObjectId(winnerId));
+        Bson newValue = new Document().append("ranking", i);
+        Bson updateOperationDocument = new Document("$set", newValue);
+        challengeSubmissionCollection.updateOne(winnerFilter, updateOperationDocument);
+      }
+      return winners;
+    } catch (Exception e) {
+      throw handleException("Get challenge winners", e);
     }
   }
 

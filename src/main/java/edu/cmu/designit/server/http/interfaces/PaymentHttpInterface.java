@@ -31,7 +31,7 @@ public class PaymentHttpInterface extends HttpInterface {
     @POST
     @Consumes({MediaType.APPLICATION_JSON})
     @Produces({MediaType.APPLICATION_JSON})
-    public AppResponse postComments(Object request){
+    public AppResponse postPayments(Object request){
         try {
             JSONObject json = null;
             json = new JSONObject(ow.writeValueAsString(request));
