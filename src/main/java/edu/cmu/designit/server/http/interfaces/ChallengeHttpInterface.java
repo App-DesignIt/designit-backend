@@ -47,8 +47,8 @@ public class ChallengeHttpInterface extends HttpInterface  {
               json.getDouble("winnerPrize")
       );
 
-      ChallengeManager.getInstance().createChallenge(newChallenge);
-      return new AppResponse("Insert Successful");
+      Challenge challenge = ChallengeManager.getInstance().createChallenge(newChallenge);
+      return new AppResponse(challenge);
 
     }catch (Exception e){
       throw handleException("POST challenges", e);

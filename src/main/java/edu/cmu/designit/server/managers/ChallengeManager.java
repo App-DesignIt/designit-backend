@@ -35,7 +35,7 @@ public class ChallengeManager extends Manager {
     return _self;
   }
 
-  public void createChallenge(Challenge challenge) throws AppException {
+  public Challenge createChallenge(Challenge challenge) throws AppException {
     try{
       Document newDoc = new Document()
               .append("name", challenge.getName())
@@ -47,10 +47,14 @@ public class ChallengeManager extends Manager {
               .append("createTime", new Date())
               .append("modifyTime", new Date());
 
-      if (newDoc != null)
+      if (newDoc != null) {
         challengeCollection.insertOne(newDoc);
-      else
+        return convertDocToArrayList(newDoc);
+      }
+      else {
         throw new AppInternalServerException(0, "Failed to create new challenge");
+
+      }
 
     }catch(Exception e){
       throw handleException("Create Challenge", e);
@@ -223,6 +227,21 @@ public class ChallengeManager extends Manager {
     } catch (Exception e) {
       throw handleException("Get challenge payments", e);
     }
+  }
+
+  public Challenge convertDocToArrayList(Document challengeDoc) {
+    Challenge challenge = new Challenge(
+            challengeDoc.getObjectId("_id").toString(),
+            challengeDoc.getString("name"),
+            challengeDoc.getString("description"),
+            challengeDoc.getString("recruiterId"),
+            challengeDoc.getDate("startTime"),
+            challengeDoc.getDate("endTime"),
+            challengeDoc.getDouble("winnerPrize"),
+            challengeDoc.getDate("createTime"),
+            challengeDoc.getDate("modifyTime")
+    );
+    return challenge;
   }
 
   public ArrayList<Challenge> convertDocsToArrayList(FindIterable<Document> challengeDocs) {
