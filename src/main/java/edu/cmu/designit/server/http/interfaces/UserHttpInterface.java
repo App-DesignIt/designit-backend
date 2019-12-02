@@ -7,14 +7,8 @@ import com.mongodb.client.MongoCollection;
 import edu.cmu.designit.server.http.exceptions.HttpBadRequestException;
 import edu.cmu.designit.server.http.responses.AppResponse;
 import edu.cmu.designit.server.http.utils.PATCH;
-import edu.cmu.designit.server.managers.ChallengeSubmissionManager;
-import edu.cmu.designit.server.managers.DraftManager;
-import edu.cmu.designit.server.managers.LikeManager;
-import edu.cmu.designit.server.models.ChallengeSubmission;
-import edu.cmu.designit.server.models.Draft;
-import edu.cmu.designit.server.models.Like;
-import edu.cmu.designit.server.models.User;
-import edu.cmu.designit.server.managers.UserManager;
+import edu.cmu.designit.server.managers.*;
+import edu.cmu.designit.server.models.*;
 import edu.cmu.designit.server.utils.*;
 import edu.cmu.designit.server.utils.AppLogger;
 import org.bson.Document;
@@ -52,17 +46,14 @@ public class UserHttpInterface extends HttpInterface{
             // Protect user's password. The generated value can be stored in DB.
             String mySecurePassword = PasswordUtils.generateSecurePassword(json.getString("password"), salt);
 
-            // Print out protected password
-            System.out.println("My secure password = " + mySecurePassword);
-            System.out.println("Salt value = " + salt);
-
             User newUser = new User(
                     null,
                     json.getString("fullName"),
                     json.getString("email"),
                     json.getInt("roleId"),
                     mySecurePassword,
-                    salt
+                    salt,
+                    json.getString("bankAccount")
             );
             UserManager.getInstance().createUser(newUser);
             return new AppResponse("Insert Successful");
@@ -166,6 +157,18 @@ public class UserHttpInterface extends HttpInterface{
             return new AppResponse(challengeSubmissions);
         } catch (Exception e) {
             throw handleException("GET /users/{userId}/challenge_submissions", e);
+        }
+    }
+
+    @GET
+    @Path("/{userId}/payments")
+    @Produces({MediaType.APPLICATION_JSON})
+    public AppResponse getPaymentsByRecruiterId(@Context HttpHeaders headers, @PathParam("userId") String userId) {
+        try {
+            ArrayList<Payment> payments = PaymentManager.getInstance().getPaymentsByRecruiterId(userId);
+            return new AppResponse(payments);
+        } catch (Exception e) {
+            throw handleException("GET /users/{userId}/payments", e);
         }
     }
 

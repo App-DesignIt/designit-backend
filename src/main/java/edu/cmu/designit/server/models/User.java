@@ -12,15 +12,17 @@ public class User {
     private String salt;
     private String companyName;
     private String preferredJob;
+    private String bankAccount;
 
     public User(String id, String fullName,
-                String email, int roleId, String password, String salt) {
+                String email, int roleId, String password, String salt, String bankAccount) {
         this.id = id;
         this.fullName = fullName;
         this.email = email;
         this.roleId = roleId;
         this.password = password;
         this.salt = salt;
+        this.bankAccount = bankAccount;
     }
 
     public User(String id, String fullName, String email, int roleId) {
@@ -92,6 +94,14 @@ public class User {
 
     public void setSalt(String salt) {
         this.salt = salt;
+    }
+
+    public String getBankAccount() {
+        return bankAccount;
+    }
+
+    public void setBankAccount(String bankAccount) {
+        this.bankAccount = bankAccount;
     }
 
     public String getCompanyName() {

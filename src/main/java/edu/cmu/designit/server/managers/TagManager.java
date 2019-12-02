@@ -4,21 +4,27 @@ import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import edu.cmu.designit.server.exceptions.AppException;
 import edu.cmu.designit.server.exceptions.AppInternalServerException;
+import edu.cmu.designit.server.models.Draft;
+import edu.cmu.designit.server.models.DraftTag;
 import edu.cmu.designit.server.models.Tag;
+import edu.cmu.designit.server.models.User;
 import edu.cmu.designit.server.utils.MongoPool;
 import org.bson.Document;
 import org.bson.conversions.Bson;
+import org.bson.types.ObjectId;
 import org.json.JSONObject;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 public class TagManager extends Manager{
     private static TagManager _self;
     private MongoCollection<Document> tagCollection;
-
+    private MongoCollection<Document> draftTagCollection;
 
     private TagManager() {
         this.tagCollection = MongoPool.getInstance().getCollection("tags");
+        this.draftTagCollection = MongoPool.getInstance().getCollection("draft_tag");
     }
 
     public static TagManager getInstance(){
@@ -129,5 +135,46 @@ public class TagManager extends Manager{
             throw handleException("Get Tag List", e);
         }
     }
+
+    public ArrayList<Tag> getTagById(String tagId) throws AppException {
+        try{
+            Bson filter = new Document("_id", new ObjectId(tagId));
+            FindIterable<Document> tagDocs = tagCollection.find(filter);
+            return convertDocsToArrayList(tagDocs);
+        } catch(Exception e){
+            throw handleException("Get User List", e);
+        }
+    }
+
+    public ArrayList<Draft> getDraftsByTagId(String tagId) throws AppException {
+        try{
+            Bson filter = new Document("tagId", tagId);
+            FindIterable<Document> draftTagDocs = draftTagCollection.find(filter);
+            ArrayList<DraftTag> draftTags = DraftTagManager.getInstance().convertDocsToArrayList(draftTagDocs);
+            ArrayList<Draft> drafts = new ArrayList<>();
+            for(DraftTag draftTag : draftTags ) {
+                String draftId = draftTag.getDraftId();
+                Draft draft = DraftManager.getInstance().getDraftById(draftId).get(0);
+                drafts.add(draft);
+            }
+            return drafts;
+        } catch (Exception e) {
+            throw handleException("Get Drafts By Tag Id", e);
+        }
+    }
+
+    private ArrayList<Tag> convertDocsToArrayList(FindIterable<Document> tagDocs) {
+        ArrayList<Tag> tagArrayList = new ArrayList<>();
+        for(Document tagDoc: tagDocs) {
+            Tag tag = new Tag(
+                    tagDoc.getObjectId("_id").toString(),
+                    tagDoc.getString("tagName"),
+                    tagDoc.getInteger("tagCount")
+            );
+            tagArrayList.add(tag);
+        }
+        return tagArrayList;
+    }
+
 
 }

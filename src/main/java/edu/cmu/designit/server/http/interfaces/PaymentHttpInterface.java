@@ -43,6 +43,7 @@ public class PaymentHttpInterface extends HttpInterface {
                     json.getDouble("amount"),
                     json.getInt("status"),
                     json.getString("recruiterId"),
+                    json.getString("challengeId"),
                     json.getString("submissionId"),
                     date,
                     date
@@ -59,10 +60,9 @@ public class PaymentHttpInterface extends HttpInterface {
     @Produces({MediaType.APPLICATION_JSON})
     public AppResponse getPayments(@Context HttpHeaders headers){
         try {
-            AppLogger.info("Got an API call");
-            ArrayList<Payment> comments = PaymentManager.getInstance().getPaymentList();
-            if(comments != null)
-                return new AppResponse(comments);
+            ArrayList<Payment> payments = PaymentManager.getInstance().getPaymentList();
+            if(payments != null)
+                return new AppResponse(payments);
             else
                 throw new HttpBadRequestException(0, "Problem with getting payments list");
         } catch (Exception e) {
@@ -71,47 +71,23 @@ public class PaymentHttpInterface extends HttpInterface {
     }
 
     @GET
+    @Path("/{paymentId}/pay")
+    @Produces({MediaType.APPLICATION_JSON})
+    public AppResponse makePayment(@Context HttpHeaders headers, @PathParam("paymentId") String paymentId){
+        try {
+            PaymentManager.getInstance().makePayment(paymentId);
+            return new AppResponse("Paid Successful");
+        } catch (Exception e) {
+            throw handleException("GET /payments/:paymentId/pay", e);
+        }
+    }
+
+    @GET
     @Path("/{paymentId}")
     @Produces({MediaType.APPLICATION_JSON})
     public AppResponse getSinglePayment(@Context HttpHeaders headers, @PathParam("paymentId") String paymentId){
         try {
-            AppLogger.info("Got an API call");
             ArrayList<Payment> payments = PaymentManager.getInstance().getPaymentById(paymentId);
-
-            if(payments != null)
-                return new AppResponse(payments);
-            else
-                throw new HttpBadRequestException(0, "Problem with getting single payment");
-        } catch (Exception e){
-            throw handleException("GET /payments/{paymentId}", e);
-        }
-    }
-
-    @GET
-    @Path("/users/{userId}")
-    @Produces({MediaType.APPLICATION_JSON})
-    public AppResponse getPaymentByUser(@Context HttpHeaders headers, @PathParam("userId") String userId){
-        try {
-            AppLogger.info("Got an API call");
-            ArrayList<Payment> payments = PaymentManager.getInstance().getPaymentByUser(userId);
-
-            if(payments != null)
-                return new AppResponse(payments);
-            else
-                throw new HttpBadRequestException(0, "Problem with getting single payment");
-        } catch (Exception e){
-            throw handleException("GET /payments/{paymentId}", e);
-        }
-    }
-
-    @GET
-    @Path("/recruiters/{recruiterId}")
-    @Produces({MediaType.APPLICATION_JSON})
-    public AppResponse getPaymentByRecruiter(@Context HttpHeaders headers, @PathParam("recruiterId") String recruiterId){
-        try {
-            AppLogger.info("Got an API call");
-            ArrayList<Payment> payments = PaymentManager.getInstance().getPaymentByRecruiter(recruiterId);
-
             if(payments != null)
                 return new AppResponse(payments);
             else
@@ -139,6 +115,7 @@ public class PaymentHttpInterface extends HttpInterface {
                     null,
                     null,
                     json.getInt("status"),
+                    null,
                     null,
                     null,
                     null,

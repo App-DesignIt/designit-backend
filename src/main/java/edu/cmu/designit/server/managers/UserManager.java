@@ -6,10 +6,7 @@ import com.mongodb.client.MongoCollection;
 import edu.cmu.designit.server.exceptions.AppException;
 import edu.cmu.designit.server.exceptions.AppInternalServerException;
 import edu.cmu.designit.server.exceptions.AppUnauthorizedException;
-import edu.cmu.designit.server.models.ChallengeSubmission;
-import edu.cmu.designit.server.models.Draft;
-import edu.cmu.designit.server.models.Session;
-import edu.cmu.designit.server.models.User;
+import edu.cmu.designit.server.models.*;
 import edu.cmu.designit.server.utils.MongoPool;
 import edu.cmu.designit.server.utils.PasswordUtils;
 import org.bson.Document;
@@ -48,7 +45,8 @@ public class UserManager extends Manager {
                     .append("email", user.getEmail())
                     .append("roleId", user.getRoleId())
                     .append("password", user.getPassword())
-                    .append("salt", user.getSalt());
+                    .append("salt", user.getSalt())
+                    .append("bankAccount", user.getBankAccount());
             if (newDoc != null) {
                 userCollection.insertOne(newDoc);
             }

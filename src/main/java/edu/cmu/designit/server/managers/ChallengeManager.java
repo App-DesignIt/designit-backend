@@ -7,11 +7,13 @@ import edu.cmu.designit.server.exceptions.AppException;
 import edu.cmu.designit.server.exceptions.AppInternalServerException;
 import edu.cmu.designit.server.models.Challenge;
 import edu.cmu.designit.server.models.ChallengeSubmission;
+import edu.cmu.designit.server.models.Payment;
 import edu.cmu.designit.server.utils.MongoPool;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -175,9 +177,51 @@ public class ChallengeManager extends Manager {
         Bson updateOperationDocument = new Document("$set", newValue);
         challengeSubmissionCollection.updateOne(winnerFilter, updateOperationDocument);
       }
-      return winners;
+      return new ArrayList<ChallengeSubmission>(winners.subList(0, winnerNumber));
     } catch (Exception e) {
       throw handleException("Get challenge winners", e);
+    }
+  }
+
+  public ArrayList<Payment> createPaymentsByChallengeIdAndChallengeWinners(String challengeId, ArrayList<ChallengeSubmission> winners) throws AppException {
+    try {
+      Challenge challenge = getChallengeById(challengeId).get(0);
+      double totalPrize = challenge.getWinnerPrize();
+      String recruiterId = challenge.getRecruiterId();
+      int winnerNumber = winners.size();
+      ArrayList<Payment> payments = new ArrayList<>();
+      if(winnerNumber == 0) return payments;
+      if(winnerNumber == 1) {
+        ChallengeSubmission winner = winners.get(0);
+        String userId = winner.getUserId();
+        String challengeSubmissionId = winner.getId();
+        double amount = totalPrize;
+        Payment payment = new Payment(null, userId, totalPrize, 0, recruiterId, challengeId, challengeSubmissionId, new Date(), new Date());
+        PaymentManager.getInstance().createPayment(payment);
+      }
+      if(winnerNumber == 2) {
+        double[] prizes = new double[]{totalPrize * 0.7, totalPrize * 0.3};
+        for(int i = 0; i < 2; i++) {
+          ChallengeSubmission winner = winners.get(i);
+          String userId = winner.getUserId();
+          String challengeSubmissionId = winner.getId();
+          Payment payment = new Payment(null, userId, prizes[i], 0, recruiterId, challengeId, challengeSubmissionId, new Date(), new Date());
+          PaymentManager.getInstance().createPayment(payment);
+        }
+      }
+      if(winnerNumber == 3) {
+        double[] prizes = new double[]{totalPrize * 0.5, totalPrize * 0.3, totalPrize * 0.2};
+        for(int i = 0; i < 3; i++) {
+          ChallengeSubmission winner = winners.get(i);
+          String userId = winner.getUserId();
+          String challengeSubmissionId = winner.getId();
+          Payment payment = new Payment(null, userId, prizes[i], 0, recruiterId, challengeId, challengeSubmissionId, new Date(), new Date());
+          PaymentManager.getInstance().createPayment(payment);
+        }
+      }
+      return PaymentManager.getInstance().getPaymentByChallengeId(challengeId);
+    } catch (Exception e) {
+      throw handleException("Get challenge payments", e);
     }
   }
 

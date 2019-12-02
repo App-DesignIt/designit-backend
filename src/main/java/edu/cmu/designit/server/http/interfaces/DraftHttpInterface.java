@@ -8,7 +8,9 @@ import edu.cmu.designit.server.http.exceptions.HttpBadRequestException;
 import edu.cmu.designit.server.http.responses.AppResponse;
 import edu.cmu.designit.server.http.utils.PATCH;
 import edu.cmu.designit.server.managers.DraftManager;
+import edu.cmu.designit.server.managers.DraftTagManager;
 import edu.cmu.designit.server.models.Draft;
+import edu.cmu.designit.server.models.Tag;
 import edu.cmu.designit.server.utils.AppLogger;
 import org.bson.Document;
 import org.bson.types.ObjectId;
@@ -18,6 +20,7 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Date;
 
@@ -116,6 +119,47 @@ public class DraftHttpInterface extends HttpInterface{
         throw new HttpBadRequestException(0, "Problem with getting drafts");
     }catch (Exception e){
       throw handleException("GET /drafts/{draftId}", e);
+    }
+  }
+
+  @GET
+  @Path("/{draftId}/tags")
+  @Produces({MediaType.APPLICATION_JSON})
+  public AppResponse getTagsByDraftId(@Context HttpHeaders headers, @PathParam("draftId") String draftId){
+    try{
+      Draft draft = DraftManager.getInstance().getDraftById(draftId).get(0);
+      ArrayList<Tag> tags = DraftTagManager.getInstance().getTagsByDraftId(draftId);
+      return new AppResponse(tags);
+    }catch (Exception e){
+      throw handleException("GET /drafts/{draftId}", e);
+    }
+  }
+
+  @POST
+  @Path("/{draftId}/tags")
+  @Consumes({ MediaType.APPLICATION_JSON })
+  @Produces({MediaType.APPLICATION_JSON})
+  public AppResponse addTagByDraftId(@Context HttpHeaders headers, Object request, @PathParam("draftId") String draftId){
+    try{
+      JSONObject json = new JSONObject(ow.writeValueAsString(request));
+      String tagId = json.getString("tagId");
+      DraftTagManager.getInstance().createDraftTagRelation(draftId, tagId);
+      return new AppResponse("Add tag success");
+    }catch (Exception e){
+      throw handleException("GET /drafts/{draftId}", e);
+    }
+  }
+
+  @DELETE
+  @Path("/{draftId}/tags")
+  @Consumes({ MediaType.APPLICATION_JSON })
+  @Produces({MediaType.APPLICATION_JSON})
+  public AppResponse addTagByDraftId(@Context HttpHeaders headers, Object request, @PathParam("draftId") String draftId, @QueryParam("tagId") String tagId){
+    try{
+      DraftTagManager.getInstance().deleteDraftTagRelation(draftId, tagId);
+      return new AppResponse("Delete tag from the draft success");
+    }catch (Exception e){
+      throw handleException("GET /drafts/{draftId}/tags?tagId=", e);
     }
   }
 

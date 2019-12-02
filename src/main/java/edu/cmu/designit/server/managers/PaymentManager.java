@@ -5,13 +5,16 @@ import com.mongodb.client.MongoCollection;
 import edu.cmu.designit.server.exceptions.AppException;
 import edu.cmu.designit.server.exceptions.AppInternalServerException;
 import edu.cmu.designit.server.models.Payment;
+import edu.cmu.designit.server.utils.Config;
 import edu.cmu.designit.server.utils.MongoPool;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 public class PaymentManager extends Manager {
 
@@ -36,6 +39,7 @@ public class PaymentManager extends Manager {
                     .append("amount", payment.getAmount())
                     .append("status", payment.getStatus())
                     .append("recruiterId", payment.getRecruiterId())
+                    .append("challengeId", payment.getChallengeId())
                     .append("submissionId", payment.getSubmissionId())
                     .append("createTime", payment.getCreateTime())
                     .append("modifyTime", payment.getModifyTime());
@@ -66,21 +70,29 @@ public class PaymentManager extends Manager {
         }
     }
 
-    public ArrayList<Payment> getPaymentByUser(String userId) throws AppException {
+    public ArrayList<Payment> getPaymentByChallengeId(String challengeId) throws AppException {
         try {
-            Bson filter = new Document("userId", userId);
+            Bson filter = new Document("challengeId", challengeId);
             return convertDocsToArrayList(paymentCollection.find(filter));
-        } catch (Exception e){
-            throw handleException("Get Payment by user", e);
+        } catch (Exception e) {
+            throw handleException("Get Payment By Challenge Id", e);
         }
     }
 
-    public ArrayList<Payment> getPaymentByRecruiter(String recruiterId) throws AppException {
+    public void makePayment(String paymentId) throws AppException {
         try {
-            Bson filter = new Document("recruiterId", recruiterId);
-            return convertDocsToArrayList(paymentCollection.find(filter));
-        } catch (Exception e){
-            throw handleException("Get Payment by recruiter", e);
+            Bson filter = new Document("_id", new ObjectId(paymentId));
+            Bson newValue = new Document()
+                    .append("status", 1)
+                    .append("modifyTime", new Date());
+            Bson updateOperationDocument = new Document("$set", newValue);
+
+            if (newValue != null)
+                paymentCollection.updateOne(filter, updateOperationDocument);
+            else
+                throw new AppInternalServerException(0, "Failed to update payment details");
+        } catch (Exception e) {
+            throw handleException("Make Payment", e);
         }
     }
 
@@ -111,6 +123,15 @@ public class PaymentManager extends Manager {
         }
     }
 
+    public ArrayList<Payment> getPaymentsByRecruiterId(String recruiterId) throws AppException {
+        try {
+            Bson filter = new Document("recruiterId", recruiterId);
+            return convertDocsToArrayList(paymentCollection.find(filter));
+        } catch (Exception e) {
+            throw handleException("Get Payments By Recruiter Id", e);
+        }
+    }
+
     private ArrayList<Payment> convertDocsToArrayList(FindIterable<Document> paymentDocs) {
         ArrayList<Payment> paymentList = new ArrayList<>();
         for(Document paymentDoc: paymentDocs) {
@@ -120,6 +141,7 @@ public class PaymentManager extends Manager {
                     paymentDoc.getDouble("amount"),
                     paymentDoc.getInteger("status"),
                     paymentDoc.getString("recruiterId"),
+                    paymentDoc.getString("challengeId"),
                     paymentDoc.getString("submissionId"),
                     (Date) paymentDoc.get("createTime"),
                     (Date) paymentDoc.get("modifyTime")

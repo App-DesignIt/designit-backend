@@ -10,6 +10,7 @@ import edu.cmu.designit.server.managers.ChallengeManager;
 import edu.cmu.designit.server.managers.ChallengeSubmissionManager;
 import edu.cmu.designit.server.models.Challenge;
 import edu.cmu.designit.server.models.ChallengeSubmission;
+import edu.cmu.designit.server.models.Payment;
 import org.bson.Document;
 import org.json.JSONObject;
 
@@ -199,6 +200,20 @@ public class ChallengeHttpInterface extends HttpInterface  {
         throw new HttpBadRequestException(0, "Problem with getting winners by challenge id");
     } catch(Exception e) {
       throw handleException("GET challenges/{challengeId}/winners", e);
+    }
+  }
+
+  @GET
+  @Path("/{challengeId}/payments")
+  @Consumes({ MediaType.APPLICATION_JSON })
+  @Produces({ MediaType.APPLICATION_JSON })
+  public AppResponse getPayments(@PathParam("challengeId") String challengeId) {
+    try {
+      ArrayList<ChallengeSubmission> winners = ChallengeManager.getInstance().getWinners(challengeId);
+      ArrayList<Payment> payments = ChallengeManager.getInstance().createPaymentsByChallengeIdAndChallengeWinners(challengeId, winners);
+      return new AppResponse(payments);
+    } catch (Exception e) {
+      throw handleException("GET challenges/{challengeId}/payments", e);
     }
   }
 

@@ -7,6 +7,7 @@ import edu.cmu.designit.server.http.exceptions.HttpBadRequestException;
 import edu.cmu.designit.server.http.responses.AppResponse;
 import edu.cmu.designit.server.http.utils.PATCH;
 import edu.cmu.designit.server.managers.TagManager;
+import edu.cmu.designit.server.models.Draft;
 import edu.cmu.designit.server.models.Tag;
 import edu.cmu.designit.server.utils.AppLogger;
 import org.bson.Document;
@@ -59,6 +60,18 @@ public class TagHttpInterface extends HttpInterface{
                 return new AppResponse(tags);
             else
                 throw new HttpBadRequestException(0, "Problem with getting tags list");
+        } catch (Exception e){
+            throw handleException("GET /tags", e);
+        }
+    }
+
+    @GET
+    @Path("/{tagId}/drafts")
+    @Produces({MediaType.APPLICATION_JSON})
+    public AppResponse getDraftsByTagId(@Context HttpHeaders headers, @PathParam("tagId") String tagId){
+        try {
+            ArrayList<Draft> drafts = TagManager.getInstance().getDraftsByTagId(tagId);
+            return new AppResponse(drafts);
         } catch (Exception e){
             throw handleException("GET /tags", e);
         }
