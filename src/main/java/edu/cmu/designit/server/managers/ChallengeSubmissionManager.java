@@ -32,7 +32,7 @@ public class ChallengeSubmissionManager extends Manager {
     return _self;
   }
 
-  public void createChallengeSubmission(ChallengeSubmission challengeSubmission) throws AppException {
+  public ChallengeSubmission createChallengeSubmission(ChallengeSubmission challengeSubmission) throws AppException {
     try{
       Document newDoc = new Document()
               .append("ranking", 0)
@@ -43,11 +43,13 @@ public class ChallengeSubmissionManager extends Manager {
               .append("recruiterScore", 0.0)
               .append("finalScore", 0.0);
 
-      if (newDoc != null)
+      if (newDoc != null) {
         challengeSubmissionCollection.insertOne(newDoc);
-      else
-        throw new AppInternalServerException(0, "Failed to create new challenge");
-
+        return convertDocToArrayList(newDoc);
+      }
+      else {
+        throw new AppInternalServerException(0, "Failed to create new challenge submission");
+      }
     }catch(Exception e){
       throw handleException("Create Challenge Submission", e);
     }
@@ -171,6 +173,21 @@ public class ChallengeSubmissionManager extends Manager {
       throw handleException("Get Challenge Submission Score", e);
     }
   }
+
+  public ChallengeSubmission convertDocToArrayList(Document challengeSubmissionDoc) {
+    ChallengeSubmission challengeSubmission = new ChallengeSubmission(
+            challengeSubmissionDoc.getObjectId("_id").toString(),
+            challengeSubmissionDoc.getInteger("ranking"),
+            challengeSubmissionDoc.getString("draftId"),
+            challengeSubmissionDoc.getString("userId"),
+            challengeSubmissionDoc.getString("challengeId"),
+            challengeSubmissionDoc.getDate("submissionTime"),
+            challengeSubmissionDoc.getDouble("recruiterScore"),
+            challengeSubmissionDoc.getDouble("finalScore")
+    );
+    return challengeSubmission;
+  }
+
 
   public ArrayList<ChallengeSubmission> convertDocsToArrayList(FindIterable<Document> challengeSubmissionDocs) {
     ArrayList<ChallengeSubmission> challengeSubmissionList = new ArrayList<>();

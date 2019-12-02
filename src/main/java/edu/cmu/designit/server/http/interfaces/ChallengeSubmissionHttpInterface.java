@@ -38,14 +38,14 @@ public class ChallengeSubmissionHttpInterface extends HttpInterface {
     try{
       JSONObject json = new JSONObject(ow.writeValueAsString(request));
 
-      ChallengeSubmission challengeSubmission = new ChallengeSubmission(
+      ChallengeSubmission newChallengeSubmission = new ChallengeSubmission(
               json.getString("draftId"),
               json.getString("userId"),
               json.getString("challengeId")
       );
 
-      ChallengeSubmissionManager.getInstance().createChallengeSubmission(challengeSubmission);
-      return new AppResponse("Insert Successful");
+      ChallengeSubmission challengeSubmission = ChallengeSubmissionManager.getInstance().createChallengeSubmission(newChallengeSubmission);
+      return new AppResponse(challengeSubmission);
     }catch (Exception e){
       throw handleException("POST challenge submissons", e);
     }
