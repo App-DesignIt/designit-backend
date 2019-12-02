@@ -121,6 +121,23 @@ public class UserHttpInterface extends HttpInterface{
     }
 
     @GET
+    @Path("/{userId}/comments")
+    @Produces({MediaType.APPLICATION_JSON})
+    public AppResponse getUserComment(@Context HttpHeaders headers, @PathParam("userId") String userId){
+        try {
+            AppLogger.info("Got an API call");
+            ArrayList<Comment> comments = CommentManager.getInstance().getCommentByUserId(userId);
+
+            if(comments != null)
+                return new AppResponse(comments);
+            else
+                throw new HttpBadRequestException(0, "Problem with getting all comments from one user");
+        } catch (Exception e){
+            throw handleException("GET /{userId}/comments", e);
+        }
+    }
+
+    @GET
     @Path("/likes")
     @Produces({MediaType.APPLICATION_JSON})
     public AppResponse getLikes(@Context HttpHeaders headers){
