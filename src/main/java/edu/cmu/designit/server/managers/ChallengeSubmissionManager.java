@@ -5,9 +5,8 @@ import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import edu.cmu.designit.server.exceptions.AppException;
 import edu.cmu.designit.server.exceptions.AppInternalServerException;
-import edu.cmu.designit.server.models.Challenge;
+import edu.cmu.designit.server.exceptions.AppNotFoundException;
 import edu.cmu.designit.server.models.ChallengeSubmission;
-import edu.cmu.designit.server.models.Draft;
 import edu.cmu.designit.server.utils.MongoPool;
 import org.bson.Document;
 import org.bson.conversions.Bson;
@@ -76,9 +75,11 @@ public class ChallengeSubmissionManager extends Manager {
     }
   }
 
-
   public void deleteChallengeSubmission(String challengeSubmissionId) throws AppException {
     try {
+      if(getChallengeSubmissionById(challengeSubmissionId).size() == 0) {
+        throw new AppNotFoundException(404, "There is no challengeSubmission with the given id");
+      }
       Bson filter = new Document("_id", new ObjectId(challengeSubmissionId));
       challengeSubmissionCollection.deleteOne(filter);
     }catch (Exception e){
@@ -88,6 +89,9 @@ public class ChallengeSubmissionManager extends Manager {
 
   public ArrayList<ChallengeSubmission> getChallengeSubmissionById(String id) throws AppException {
     try{
+      if(getChallengeSubmissionById(id).size() == 0) {
+        throw new AppNotFoundException(404, "There is no challengeSubmission with the given id");
+      }
       Bson filter = new Document("_id", new ObjectId(id));
       FindIterable<Document> challengeSubmissionDocs = challengeSubmissionCollection.find(filter);
       return convertDocsToArrayList(challengeSubmissionDocs);
@@ -98,6 +102,9 @@ public class ChallengeSubmissionManager extends Manager {
 
   public ArrayList<ChallengeSubmission> getChallengeSubmissionsByChallengeId(String challengeId) throws AppException {
     try {
+      if(ChallengeManager.getInstance().getChallengeById(challengeId).size() == 0) {
+        throw new AppNotFoundException(404, "There is no challenge with the given id");
+      }
       Bson filter = new Document("challengeId", challengeId);
       FindIterable<Document> challengeSubmissionDocs = challengeSubmissionCollection.find(filter);
       return convertDocsToArrayList(challengeSubmissionDocs);
@@ -157,6 +164,9 @@ public class ChallengeSubmissionManager extends Manager {
 
   public void calculateChallengeSubmissionScore(String challengeSubmissionId) throws AppException {
     try {
+      if(getChallengeSubmissionById(challengeSubmissionId).size() == 0) {
+        throw new AppNotFoundException(404, "There is no challengeSubmission with the given id");
+      }
       ChallengeSubmission challengeSubmission = getChallengeSubmissionById(challengeSubmissionId).get(0);
       String draftId = challengeSubmission.getDraftId();
       double userScore = DraftManager.getInstance().getDraftById(draftId).get(0).getUserScore();

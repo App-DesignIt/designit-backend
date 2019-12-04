@@ -2,17 +2,11 @@ package edu.cmu.designit.server.http.interfaces;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
-import com.mongodb.client.MongoCollection;
 import edu.cmu.designit.server.http.exceptions.HttpBadRequestException;
 import edu.cmu.designit.server.http.responses.AppResponse;
 import edu.cmu.designit.server.http.utils.PATCH;
-import edu.cmu.designit.server.managers.ChallengeManager;
 import edu.cmu.designit.server.managers.ChallengeSubmissionManager;
-import edu.cmu.designit.server.managers.DraftManager;
-import edu.cmu.designit.server.models.Challenge;
 import edu.cmu.designit.server.models.ChallengeSubmission;
-import edu.cmu.designit.server.models.Draft;
-import org.bson.Document;
 import org.json.JSONObject;
 
 import javax.ws.rs.*;
@@ -25,7 +19,6 @@ import java.util.Date;
 @Path("/challenge_submissions")
 public class ChallengeSubmissionHttpInterface extends HttpInterface {
   private ObjectWriter ow;
-  private MongoCollection<Document> challengeSubmissionCollection = null;
 
   public ChallengeSubmissionHttpInterface() {
     ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
@@ -59,7 +52,7 @@ public class ChallengeSubmissionHttpInterface extends HttpInterface {
                                    @QueryParam("offset") Integer offset,
                                    @QueryParam("count") Integer count,
                                    @QueryParam("filter") String filter) {
-    try{
+    try {
       ArrayList<ChallengeSubmission> challengeSubmissions = null;
       if(sortby != null) {
         if(sortdirection == null)  {
@@ -71,11 +64,11 @@ public class ChallengeSubmissionHttpInterface extends HttpInterface {
         challengeSubmissions = ChallengeSubmissionManager.getInstance().getChallengeSubmissionListPaginated(offset, count);
       } else if (filter != null) {
         challengeSubmissions =ChallengeSubmissionManager.getInstance().getChallengeSubmissionListFiltered(filter);
-      } else{
+      } else {
         challengeSubmissions = ChallengeSubmissionManager.getInstance().getChallengeSubmissionList();
       }
       return new AppResponse(challengeSubmissions);
-    } catch (Exception e){
+    } catch (Exception e) {
       throw handleException("GET /challenge_submissions", e);
     }
   }

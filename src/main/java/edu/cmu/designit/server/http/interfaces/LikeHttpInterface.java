@@ -34,11 +34,8 @@ public class LikeHttpInterface extends HttpInterface {
     @Produces({MediaType.APPLICATION_JSON})
     public AppResponse postLikes(Object request){
         try {
-            JSONObject json = null;
-            json = new JSONObject(ow.writeValueAsString(request));
-
+            JSONObject json = new JSONObject(ow.writeValueAsString(request));
             Date date = new Date();
-
             Like newLike = new Like (
                     null,
                     json.getString("draftId"),

@@ -18,7 +18,6 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Date;
 

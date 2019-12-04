@@ -5,18 +5,17 @@ import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import edu.cmu.designit.server.exceptions.AppException;
 import edu.cmu.designit.server.exceptions.AppInternalServerException;
+import edu.cmu.designit.server.exceptions.AppNotFoundException;
 import edu.cmu.designit.server.models.Challenge;
 import edu.cmu.designit.server.models.ChallengeSubmission;
 import edu.cmu.designit.server.models.Payment;
+import edu.cmu.designit.server.models.User;
 import edu.cmu.designit.server.utils.MongoPool;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
-
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
 public class ChallengeManager extends Manager {
   public static ChallengeManager _self;
@@ -24,7 +23,6 @@ public class ChallengeManager extends Manager {
   private MongoCollection<Document> challengeSubmissionCollection;
 
   public ChallengeManager() {
-
     this.challengeCollection = MongoPool.getInstance().getCollection("challenges");
     this.challengeSubmissionCollection = MongoPool.getInstance().getCollection("challenge_submissions");
   }
@@ -37,26 +35,26 @@ public class ChallengeManager extends Manager {
 
   public Challenge createChallenge(Challenge challenge) throws AppException {
     try{
+      String recruiterId = challenge.getRecruiterId();
+      if(UserManager.getInstance().getUserById(recruiterId).size() == 0) {
+        throw new AppNotFoundException(404, "There is not a recruiter with the given id");
+      }
       Document newDoc = new Document()
               .append("name", challenge.getName())
               .append("description", challenge.getDescription())
-              .append("recruiterId", challenge.getRecruiterId())
+              .append("recruiterId", recruiterId)
               .append("startTime", challenge.getStartTime())
               .append("endTime", challenge.getEndTime())
               .append("winnerPrize", challenge.getWinnerPrize())
               .append("createTime", new Date())
               .append("modifyTime", new Date());
-
       if (newDoc != null) {
         challengeCollection.insertOne(newDoc);
         return convertDocToArrayList(newDoc);
-      }
-      else {
+      } else {
         throw new AppInternalServerException(0, "Failed to create new challenge");
-
       }
-
-    }catch(Exception e){
+    } catch(Exception e){
       throw handleException("Create Challenge", e);
     }
   }
@@ -102,7 +100,6 @@ public class ChallengeManager extends Manager {
       throw handleException("Delete Challenge", e);
     }
   }
-
 
   public ArrayList<Challenge> getChallengeList() throws AppException {
     try{
@@ -155,6 +152,9 @@ public class ChallengeManager extends Manager {
 
   public ArrayList<ChallengeSubmission> calculateAllSubmissionScore(String challengeId) throws AppException {
     try {
+      if(getChallengeById(challengeId).size() == 0) {
+        throw new AppNotFoundException(404, "There is no challenge with the given id");
+      }
       ArrayList<ChallengeSubmission> submissions = ChallengeSubmissionManager.getInstance().getChallengeSubmissionsByChallengeId(challengeId);
       for(ChallengeSubmission submission : submissions) {
         ChallengeSubmissionManager.getInstance().calculateChallengeSubmissionScore(submission.getId());
@@ -167,6 +167,9 @@ public class ChallengeManager extends Manager {
 
   public ArrayList<ChallengeSubmission> getWinners(String challengeId) throws AppException {
     try {
+      if(getChallengeById(challengeId).size() == 0) {
+        throw new AppNotFoundException(404, "There is no challenge with the given id");
+      }
       Bson filter = new Document("challengeId", challengeId);
       BasicDBObject sortParams = new BasicDBObject();
       sortParams.put("finalScore", -1);
@@ -189,6 +192,9 @@ public class ChallengeManager extends Manager {
 
   public ArrayList<Payment> createPaymentsByChallengeIdAndChallengeWinners(String challengeId, ArrayList<ChallengeSubmission> winners) throws AppException {
     try {
+      if(getChallengeById(challengeId).size() == 0) {
+        throw new AppNotFoundException(404, "There is no challenge with the given id");
+      }
       Challenge challenge = getChallengeById(challengeId).get(0);
       double totalPrize = challenge.getWinnerPrize();
       String recruiterId = challenge.getRecruiterId();

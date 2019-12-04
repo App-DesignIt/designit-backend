@@ -4,6 +4,7 @@ import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import edu.cmu.designit.server.exceptions.AppException;
 import edu.cmu.designit.server.exceptions.AppInternalServerException;
+import edu.cmu.designit.server.exceptions.AppNotFoundException;
 import edu.cmu.designit.server.models.DraftTag;
 import edu.cmu.designit.server.models.Tag;
 import edu.cmu.designit.server.utils.MongoPool;
@@ -29,14 +30,19 @@ public class DraftTagManager extends Manager {
 
   public void createDraftTagRelation(String draftId, String tagId) throws AppException {
     try {
+      if(DraftManager.getInstance().getDraftById(draftId).size() == 0) {
+        throw new AppNotFoundException(404, "The draft doesn't exist");
+      }
+      if(TagManager.getInstance().getTagById(tagId).size() == 0) {
+        throw new AppNotFoundException(404, "The tag doesn't exist");
+      }
       if(getDraftTagRelationByDraftIdAndTagId(draftId, tagId).size() != 0) {
-        throw new AppInternalServerException(0, "The relation already exists");
+        throw new AppInternalServerException(500, "The relation already exists");
       }
       Document newDoc = new Document()
               .append("draftId", draftId)
               .append("tagId", tagId);
       draftTagCollection.insertOne(newDoc);
-      //updateTagCount
     } catch (Exception e) {
       throw handleException("Create draft tag relation", e);
     }
